@@ -1,0 +1,19 @@
+{
+  "name": "markdown-preview-pro",
+  "version": "1.0.0",
+  "description": "An interactive, responsive Markdown editor and live preview web application with dark mode",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "markdown",
+    "markdown-editor",
+    "markdown-preview",
+    "dark-mode",
+    "live-preview",
+    "portfolio"
+  ],
+  "author": "Gopichand Chikoti",
+  "license": "MIT"
+}
