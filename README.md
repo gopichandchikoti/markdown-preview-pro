@@ -1,6 +1,7 @@
 # MD Preview Pro 📝
 
 An interactive, responsive, feature-packed Markdown editor with instant live preview, dedicated light/dark theme toggle, resizable split panels, and GitHub-flavored markdown capabilities.
+**Live demo:** https://markdown-preview-pro.vercel.app
 
 ![MD Preview Pro Preview](https://img.shields.io/badge/Status-Complete-success?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
