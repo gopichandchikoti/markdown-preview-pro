@@ -50,7 +50,7 @@ and test source converted to strict TypeScript per user direction. TypeScript 7.
 scripts and Node CommonJS into ignored dist/. src/contracts.d.ts owns typed entities, repository/session
 contracts and integration globals; src/dom.ts checks static DOM elements at runtime. No React/Next.js
 framework is needed for the local-only workflow. The former 542-line app.js is now a small state entry.
-All new handwritten JS modules stay below 300 lines. Original CSS remains a legacy size exception.
+All new handwritten TypeScript modules stay below 300 lines. Original CSS remains a legacy size exception.
 
 ADR-2: IndexedDB is the source of truth, with an atomic v1 seed/legacy marker. localStorage remains for
 appearance/UI state and the retained legacy source. UUID revision tokens plus workspace generations
@@ -65,6 +65,12 @@ Exit strategy: single Markdown downloads and versioned JSON backups.
 ADR-4: conflicts preserve local drafts in memory and keep the committed remote revision. Recovery makes
 a new document; there is no last-writer-wins content overwrite. External deletion of dirty documents also
 keeps the draft available for recovery. Unsaved drafts are included as separate backup records.
+
+ADR-5: import local Markdown by drag/drop or the equivalent native file picker. Reuse the repository,
+tab controller, sanitizer and editor rather than adding a framework or filesystem bridge. Read and
+validate a bounded batch before one atomic import transaction, never replace an existing document.
+Preserve normalized original filenames with manual title ownership and numbered collision suffixes.
+This copies files into IndexedDB; native file handles, write-back and directory imports are out of scope.
 
 ## 3. Source ownership
 
@@ -87,11 +93,14 @@ keeps the draft available for recovery. Unsaved drafts are included as separate 
 | src/workspace/title.ts, shortcuts.ts | Offline suggestions and delivered keyboard events |
 | src/workspace/sync.ts | Invalidation, refresh and explicit conflict resolution |
 | src/workspace/backup.ts | Validated export/import and explicit storage permission |
+| src/files.ts | Bounded byte streams shared by both import formats |
+| src/workspace/markdown-files.ts | Markdown filename, UTF-8, byte/batch and document validation |
+| src/workspace/markdown-import.ts | File drop/picker feedback, transaction and tab activation |
 | src/parser.ts, security.ts | Preserved parser and maintained DOMPurify boundary |
 | src/json.ts, content.ts | Duplicate-key JSON validation and typed content adapter |
 | tools/server.ts | Exact runtime allowlist, loopback listener and response headers |
 | tools/vendor.ts, content.ts, check.ts | Locked vendor prep, model bundling and recursive checks |
-| styles.css, workspace.css | Existing tokens/prose and responsive workspace extensions |
+| public/index.html, styles.css, workspace.css | App shell, existing tokens/prose and responsive workspace extensions |
 
 ## 4. Data model and migration
 
@@ -130,6 +139,12 @@ revision. Folder moves validate the complete resulting graph, preventing self/de
 requires the workspace generation captured before confirmation and removes subtree files atomically.
 Restore uses the same generation protection and changes imported revisions to invalidate old editors.
 Failures use internal semantic error codes; UI resolves bounded actionable model messages.
+
+ImportDocuments accepts a destination folder ID (or null for My Notes) and 1-32 name/content pairs.
+The repository validates document limits, names, references and total entity limits, assigns new IDs
+and revisions, and resolves collisions inside the transaction. Failure rolls back every imported
+document and any fallback folder. Serialized competing imports cannot replace each other's documents.
+It changes no schema or legacy migration markers; existing files, drafts and revisions are retained.
 
 ## 6. Screens, navigation and editor state
 
@@ -181,6 +196,23 @@ Merge/Replace choices precede confirmation; cancellation changes nothing. Merge 
 resolves root-folder collisions. Replace is atomic and refuses stale generations/unsaved drafts.
 Exceptionally large legacy exports may exceed the import bound; the UI warns and individual Markdown
 exports remain available. No ZIP dependency, encryption or automatic remote backup is included.
+
+Individual `.md` imports accept UTF-8 text, including empty files, BOM and original line endings.
+The shared reader rejects metadata/actual-byte overflow before retaining chunks and cancels failed
+reads. Limits are 800,000 bytes per file, 8 MiB total, 32 files; existing parser/document limits also
+apply. Wrong extensions, unsafe names, binary controls and invalid UTF-8 refuse the whole batch before
+storage changes. Directory drops are refused. Read failures, busy/modal state and failed writes report
+localized errors without claiming success. No content is sent off-device. Imported previews use the
+existing sanitizer/image-consent path; unconsented images make no requests. Native text/link drops
+retain their existing behavior. The picker provides keyboard/touch access to the same pipeline.
+
+The import controller captures the current draft, pauses editing/formatting during the read/commit,
+opens all committed files in shared tabs (last active), then restores editor focus. It targets the
+selected folder or active file's parent, falling back to My Notes if the workspace has no folders.
+Names remain manual, so a heading suggestion cannot silently rename an imported file.
+Browser API references checked 2026-11-17: [file drag/drop](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/File_drag_and_drop),
+[Blob streams](https://developer.mozilla.org/en-US/docs/Web/API/Blob/stream),
+and [strict UTF-8 decoding](https://developer.mozilla.org/en-US/docs/Web/API/TextDecoder/TextDecoder).
 
 ## 9. Security, privacy and egress
 
@@ -247,7 +279,9 @@ parity/placeholder failures and preference corruption. More languages/language-s
 
 npm ci installs the locked dependencies. npm run build runs strict TypeScript 7.0.2 compilation, prepares
 DOMPurify/license and bundled model source/data, then compiles again. Browser/Node output lives in dist/,
-which is ignored. The exact allowlist maps existing /src/*.js URLs to compiled files under dist/src/.
+which is ignored. The build copies compiled browser assets into ignored public/src and public/vendor
+for static hosting. The source shell/styles live in public/. The exact loopback allowlist maps existing
+/src/*.js URLs to compiled files under dist/src/ and serves the shell/styles from public/.
 Only the unchanged DOMPurify distribution is maintained as vendor JavaScript.
 npm run typecheck runs tsc --noEmit with strict/noEmitOnError. npm run check typechecks, syntax-checks
 compiled files and validates HTML content references.
@@ -265,7 +299,7 @@ Renaming this check requires coordinating its required-check contract; successfu
 name do not satisfy it. See [GitHub's troubleshooting guidance](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks).
 The user subsequently authorized a new feature branch, committing/pushing all changes, and opening a PR.
 Merging, deployment and publication remain unauthorized. No user-profile storage was modified by tests.
-The feature/local-first-workspace-typescript branch opts out of automatic Vercel Git deployment via
+The feature/local-first-workspace-typescript and feature/markdown-file-drop branches opt out of automatic Vercel Git deployment via
 vercel.json, following [Vercel’s branch configuration](https://vercel.com/docs/project-configuration/git-configuration)
 checked 2026-11-17. This preserves the existing published demo while source review proceeds.
 
@@ -285,6 +319,26 @@ Current run date: 2026-11-17. Final delivery uses the authorized feature branch/
 | Phase 4 naming | Offline suggestions, collisions/manual ownership, shortcuts | title/shortcuts | Passed unit and 5 browser journeys before sync | Browser-reserved shortcuts |
 | Phase 5 reliability | External sync, conflicts, quota/retry | sync/bridge | Passed 7 browser journeys before backup | Uncommitted crash loss possible |
 | Phase 6 backup/QA | Round trip, invalid import, migration/storage and responsive QA | backup/tests/e2e | Final evidence below | 32 MiB import bound |
+| Markdown drop/picker | Original filename tab, preview, durable copy, safe batch failure/collisions | files/markdown-files/markdown-import/repository | Verified: 6 Node and 6 browser journeys | UTF-8/size limits; no native write-back |
+
+Markdown import enhancement, 2026-11-17: baseline 0b9782d, integrated with origin/main a83674a after
+the earlier workspace PR was merged and main moved the static shell/styles into public/. Standard
+engineering complexity; recommended GPT-6.1 Sol High, with no model-switch tool or delegation used.
+Slices: reproduce missing drop behavior; implement bounded decoding/atomic repository import and
+verify data failure/rollback; wire drop/picker/tabs and inspect responsive UI; run wider gates.
+The initial single-file browser regression failed with no imported tab before implementation.
+npm run verify then passed strict build/types/syntax/content checks, all 30 Node tests and the secret
+scan; npm run e2e passed 26 Edge journeys, including the six new import journeys. Moderate npm audit
+reported zero vulnerabilities. The shared stream change also passed existing backup regressions.
+Import checks cover original/duplicate names, empty/Unicode/CRLF/BOM text, actual and aggregate byte
+limits, rejected batches, concurrent collision allocation, fallback-folder rollback, quota failure,
+draft preservation and reload, keyboard picker, drag feedback, 320px reflow, sanitizer and image consent.
+Current synthetic screenshots were inspected at 320/1366px; axe/keyboard checks also passed at 768px.
+After integration with main, the complete suites passed again. The restarted loopback app separately
+passed drop -> original filename tab -> safe preview -> reload with retained content and no page errors
+in a fresh Edge profile. README screenshots were refreshed from the inspected synthetic test contexts.
+OS-level file-manager dragging, physical touch pickers, screen readers and non-Edge platforms remain
+unverified locally. No schema migration, account/service, paid dependency, or hosted release is needed.
 
 Final local verification after the TypeScript conversion: npm run build, npm run verify (including
 strict typecheck and 24 Node tests), npm run e2e (20 Edge tests), and npm audit --audit-level=moderate

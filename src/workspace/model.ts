@@ -3,6 +3,7 @@
   'use strict';
   const MAX_ITEMS = 10000;
   const MAX_DEPTH = 64;
+  const MAX_IMPORT_FILES = 32;
   const id = () => root.crypto.randomUUID();
   const copy:Record<string,string>|null = typeof module !== 'undefined' && module.exports ?
     require('../../public/markdown-preview-pro.model.json').locales.en : null;
@@ -99,7 +100,8 @@
     if (!value) return fail('invalidData');
     return value;
   }
-  const api = { MAX_ITEMS, MAX_DEPTH, id, fail, text, generation, marker, WorkspaceError, normalizeName, uniqueName, untitled, validateTree };
+  const api = { MAX_ITEMS, MAX_DEPTH, MAX_IMPORT_FILES, id, fail, text, generation, marker,
+    WorkspaceError, normalizeName, uniqueName, untitled, validateTree };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.WorkspaceModel = api;
 })(globalThis);

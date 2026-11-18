@@ -181,7 +181,18 @@
       "glyph.status": " • ",
       "backup.large": "Backup downloaded, but it exceeds the 32 MiB import limit. Keep the original and export individual Markdown files before clearing browser data.",
       "workspace.creating": "Creating document…",
-      "workspace.duplicateFolder": "Duplicate folder"
+      "workspace.duplicateFolder": "Duplicate folder",
+      "import.markdown.open": "Open Markdown files",
+      "import.markdown.hint": "Drop .md files anywhere to open them in new tabs.",
+      "import.markdown.drop": "Drop Markdown files to open in new tabs",
+      "import.markdown.reading": "Opening Markdown files…",
+      "import.markdown.done.one": "Opened {count} Markdown file.",
+      "import.markdown.done.other": "Opened {count} Markdown files.",
+      "error.markdownType": "Choose .md files only. Folders and other file types are not imported.",
+      "error.markdownBytes": "Import up to 32 files, 800,000 bytes per file and 8 MiB per batch. No files were imported.",
+      "error.markdownEncoding": "This file is not valid UTF-8 Markdown text. Save it as UTF-8 and try again.",
+      "error.markdownRead": "Could not read the Markdown file. Try opening it again. No files were imported.",
+      "error.markdownBusy": "Wait for the current document operation to finish, then drop the files again."
     }
   }
 }

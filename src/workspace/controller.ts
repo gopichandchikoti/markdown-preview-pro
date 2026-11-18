@@ -6,6 +6,7 @@
     repository:RepositoryAdapter; snapshot:WorkspaceSnapshot; state:WorkspaceView; selected:SelectionRef;
     statuses:Map<string,SaveStatus>; sessions:Map<string,DocumentSession>; query:string; activity:number;
     pendingDocument = false;
+    pendingLabel = 'workspace.creating';
     broadcast?:()=>void; refreshExternal?:()=>Promise<void>;
 
     constructor(repository:RepositoryAdapter, snapshot:WorkspaceSnapshot) {
@@ -73,6 +74,7 @@
     async newFile(tab = false) {
       if (this.pendingDocument) return;
       root.EditorBridge.capture(this);
+      this.pendingLabel = 'workspace.creating';
       this.pendingDocument = true; this.render();
       try {
         let folder = this.destination(tab);
@@ -115,7 +117,8 @@
         'workspace.duplicateFolder' : 'workspace.duplicate');
       byId('selectionName').textContent = this.snapshot[this.selected?.kind || 'folders']
         .find(r => r.id === this.selected?.id)?.name || t('workspace.select');
-      byId('saveStatus').textContent = t(this.pendingDocument ? 'workspace.creating' :
+      UI.button('markdownOpen').disabled = this.pendingDocument;
+      byId('saveStatus').textContent = t(this.pendingDocument ? this.pendingLabel :
         'common.' + (this.statuses.get(this.state.active || '') || 'saved'));
       root.EditorBridge?.status(this);
     }

@@ -121,6 +121,7 @@
         <div class="workspace-backups"><button id="exportWorkspace" data-text="backup.export"></button><button id="importWorkspace" data-text="backup.import"></button><input type="file" id="backupFile" accept=".json,application/json" hidden=""><button id="persistentStorage" data-text="storage.persist"></button></div>
       </aside>
       <main class="workspace-main" id="workspaceMain">
+        <div class="markdown-import-bar"><button id="markdownOpen" data-text="import.markdown.open"></button><span data-text="import.markdown.hint"></span><input type="file" id="markdownFiles" accept=".md,text/markdown" multiple hidden></div>
         <div class="tab-bar"><button id="previousTab" data-text="glyph.previous" data-label="workspace.previous"></button><div id="documentTabs" data-label="workspace.tabs"></div><button id="nextTab" data-text="glyph.next" data-label="workspace.next"></button><button id="tabNew" data-text="glyph.plus" data-label="workspace.newFile"></button></div>
         <div class="workspace-feedback"><span id="saveStatus" role="status"></span><button id="retryStorage" data-text="common.retry"></button><select id="layoutSelect" data-label="layout.label"><option value="split" data-text="layout.split"></option><option value="editor" data-text="layout.editor"></option><option value="preview" data-text="layout.preview"></option></select></div>
         <p id="workspaceNotice" role="status"></p>
@@ -180,12 +181,14 @@
   </div>
 
   <dialog id="workspaceDialog" aria-labelledby="dialogTitle"><form method="dialog"></form></dialog>
+  <div id="markdownDropHint" class="markdown-drop-hint" role="status" hidden><span data-text="import.markdown.drop"></span></div>
   <script defer="" src="vendor/purify.min.js"></script>
   <script defer="" src="src/dom.js"></script>
   <script defer="" src="src/content-data.js"></script>
   <script defer="" src="src/json.js"></script>
   <script defer="" src="src/content.js"></script>
   <script defer="" src="src/security.js"></script>
+  <script defer="" src="src/files.js"></script>
   <script defer="" src="src/parser.js"></script>
   <script defer="" src="src/workspace/model.js"></script>
   <script defer="" src="src/workspace/db.js"></script>
@@ -201,6 +204,8 @@
   <script defer="" src="src/workspace/shortcuts.js"></script>
   <script defer="" src="src/workspace/sync.js"></script>
   <script defer="" src="src/workspace/backup.js"></script>
+  <script defer="" src="src/workspace/markdown-files.js"></script>
+  <script defer="" src="src/workspace/markdown-import.js"></script>
   <script defer="" src="src/app.js"></script>
   <script defer="" src="src/editor/render.js"></script>
   <script defer="" src="src/editor/commands.js"></script>

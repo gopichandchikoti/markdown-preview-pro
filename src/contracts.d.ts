@@ -1,5 +1,7 @@
 type EntityKind = 'folders' | 'documents';
 type SaveStatus = 'saved' | 'saving' | 'dirty' | 'failed' | 'conflict';
+interface MarkdownImport { name:string; content:string }
+type MarkdownFile = Pick<File,'name'|'size'|'stream'>;
 interface WorkspaceFolder {
   id: string; parentId: string | null; name: string; createdAt: number; updatedAt: number; sortOrder: number;
 }
@@ -24,7 +26,7 @@ interface DocumentSession {
 interface ContentModelShape { schemaVersion: number; defaultLocale: string; locales: Record<string, Record<string, string>> }
 interface ContentAdapter { t(key: string, values?: Record<string, string | number>): string; locale: string }
 interface ModelAPI {
-  MAX_ITEMS: number; MAX_DEPTH: number; id(): string; fail(code: string): never;
+  MAX_ITEMS: number; MAX_DEPTH: number; MAX_IMPORT_FILES:number; id(): string; fail(code: string): never;
   text(key: string, values?: Record<string, string | number>): string;
   normalizeName(value: string, file?: boolean): string;
   uniqueName<T extends {id:string;name:string}>(records: T[], parentKey: keyof T, parentId: string | null,
@@ -45,6 +47,7 @@ interface RepositoryAdapter {
   change<T>(transform: (state: WorkspaceSnapshot) => T): Promise<T>;
   createFolder(parentId: string | null, name: string): Promise<WorkspaceFolder>;
   createDocument(folderId: string, content?: string, name?: string): Promise<WorkspaceDocument>;
+  importDocuments(folderId:string|null, documents:ReadonlyArray<MarkdownImport>):Promise<WorkspaceDocument[]>;
   save(id: string, revision: string, content: string): Promise<WorkspaceDocument>;
   rename(kind: 'documents', id: string, name: string, revision: string): Promise<WorkspaceDocument>;
   rename(kind: 'folders', id: string, name: string, revision?: string): Promise<WorkspaceFolder>;
@@ -61,6 +64,7 @@ interface WorkspaceInstance {
   repository: RepositoryAdapter; snapshot: WorkspaceSnapshot; state: WorkspaceView; selected: SelectionRef;
   statuses: Map<string, SaveStatus>; sessions: Map<string, DocumentSession>; query: string; activity: number;
   pendingDocument:boolean;
+  pendingLabel:string;
   active(): WorkspaceDocument | undefined; generation(): number; destination(tab?:boolean): string | null | undefined;
   persist(): void; notice(message:string): void; error(error:unknown): void;
   run(action:()=>Promise<unknown>|unknown): Promise<boolean>; refresh(): Promise<void>;
@@ -109,6 +113,13 @@ declare var WorkspaceTitle: {bind(w:WorkspaceInstance):void; update(w:WorkspaceI
 declare var WorkspaceShortcuts: {bind(w:WorkspaceInstance):void};
 declare var WorkspaceSync: {start(w:WorkspaceInstance):void};
 declare var WorkspaceBackup: BackupAPI;
+declare var FileBytes: {
+  read(file:Pick<Blob,'size'|'stream'>, options:{maxBytes:number;overflowCode:string}):Promise<Uint8Array>;
+};
+declare var MarkdownFiles: {
+  read(files:ReadonlyArray<MarkdownFile>):Promise<MarkdownImport[]>; MAX_FILE_BYTES:number; MAX_BATCH_BYTES:number;
+};
+declare var WorkspaceMarkdownImport: { bind():void; open(files:ReadonlyArray<MarkdownFile>):Promise<void> };
 declare var WorkspaceActions: {bind(w:WorkspaceInstance):void; cycle(w:WorkspaceInstance,direction:number):boolean; path(w:WorkspaceInstance,id:string|null):string};
 interface TabsOptions {
   container:HTMLElement;documents:WorkspaceDocument[];state:WorkspaceView;statuses:Map<string,SaveStatus>;

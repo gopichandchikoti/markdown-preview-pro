@@ -10,6 +10,7 @@ for (const element of document.querySelectorAll<HTMLElement>('[data-asset]')) el
 document.documentElement.lang = Content.locale;
 editor.setAttribute('aria-description', Content.t('editor.escape'));
 WorkspaceBackup.bind();
+WorkspaceMarkdownImport.bind();
 if (matchMedia('(max-width: 768px)').matches) UI.html('workspaceShell').classList.add('sidebar-hidden');
 UI.html('explorerToggle').onclick = () => UI.html('workspaceShell').classList.toggle('sidebar-hidden');
 UI.html('explorerClose').onclick = () => UI.html('workspaceShell').classList.add('sidebar-hidden');
