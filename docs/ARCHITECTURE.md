@@ -377,10 +377,16 @@ TypeScript file was restored byte-for-byte and recompiled before final regressio
 ## 15. Standard v2.6.0 applicability review
 
 The user supplied the updated Universal Application Agent Standard during final verification. The
-repository AGENTS.md is byte-identical to that 61,064-byte source. Project-only .codex/config.toml
+repository AGENTS.md and supplied shared copy are byte-identical at 61,877 bytes after adding the
+user-requested sync-main-first operating rule. Project-only .codex/config.toml
 sets project_doc_max_bytes to 98,304; global configuration is unchanged. The file fits this budget.
 The running conversation explicitly read the complete rulebook; automatic loading after a restart
 depends on Codex project trust and was not claimed as observed.
+
+Repository synchronization checked 2026-11-17: after fetching origin, `git pull --no-rebase origin main`
+reported Already up to date on feature/markdown-file-drop. `git merge-base --is-ancestor origin/main HEAD`
+confirmed that latest main revision a83674aa49da613fef2e8854152d7db8c1204af2 was incorporated. Future
+work must update from remote main before edits, preserving local work and published branch history.
 
 Task classification: complex/high risk because migration, concurrent editors and recovery can affect
 user text. Recommended model under this standard: GPT-6.1 Sol, Max. No current-agent model-switch tool

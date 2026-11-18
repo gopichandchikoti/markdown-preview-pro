@@ -153,5 +153,6 @@ include TypeScript, Playwright, jsdom, fake-indexeddb and axe-core; they are not
 The review branches feature/local-first-workspace-typescript and feature/markdown-file-drop opt out
 of Vercel automatic deployment in vercel.json. Publishing requires separate approval.
 
-Repository AGENTS.md uses the supplied v2.6.0 standard; .codex/config.toml raises only the project
+Repository AGENTS.md uses the supplied v2.6.0 standard with the required main-first synchronization rule;
+.codex/config.toml raises only the project
 instruction budget. The architecture guide records the applicable controls and remaining QA gaps.

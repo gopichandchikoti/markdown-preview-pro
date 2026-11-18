@@ -26,6 +26,15 @@ One rulebook; app facts in core docs. Conditional rules never expand scope.
 **Assumptions first:** Before a nontrivial edit, state the target, assumptions, and acceptance briefly.
 If a material ambiguity remains after inspecting available context, ask and wait before dependent changes.
 
+**Sync main first:** Before starting any new feature, fix, or other repository change, inspect Git status
+and the configured remote, then pull the latest remote `main` into the working branch before editing.
+On `main`, use a fast-forward-only pull; start new feature branches from the updated remote `main`.
+For an existing feature branch, fetch and merge remote `main` without rewriting published history;
+rebase only unpublished work. Record the incorporated main revision and result. Preserve local and
+untracked work: never reset, clean, stash, discard, force-push, or overwrite it to make synchronization
+succeed. If synchronization is blocked or unavailable, report the blocker before dependent edits.
+A fetch alone does not satisfy this rule; verify the working branch contains the fetched main revision.
+
 1. Inspect rules, Git status/untracked files, core docs, manifests, owning code, tests and abstractions.
    Record revision/env.
 2. Plan proportionally: acceptance, owner, compatibility, falsifiable hypothesis, cheapest useful check.
