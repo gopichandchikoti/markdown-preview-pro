@@ -32,7 +32,7 @@
     "@types/node": "26.6.6",
     "axe-core": "4.14.1",
     "fake-indexeddb": "6.2.8",
-    "jsdom": "26.1.0",
+    "jsdom": "31.0.1",
     "typescript": "7.0.2"
   },
   "engines": {
