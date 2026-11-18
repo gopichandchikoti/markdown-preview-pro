@@ -59,6 +59,7 @@ interface SelectionRef { id: string | null; kind: EntityKind }
 interface WorkspaceInstance {
   repository: RepositoryAdapter; snapshot: WorkspaceSnapshot; state: WorkspaceView; selected: SelectionRef;
   statuses: Map<string, SaveStatus>; sessions: Map<string, DocumentSession>; query: string; activity: number;
+  pendingDocument:boolean;
   active(): WorkspaceDocument | undefined; generation(): number; destination(tab?:boolean): string | null | undefined;
   persist(): void; notice(message:string): void; error(error:unknown): void;
   run(action:()=>Promise<unknown>|unknown): Promise<boolean>; refresh(): Promise<void>;
@@ -134,4 +135,5 @@ interface Window {
   Workspace:WorkspaceInstance; copied:string[]; destination:string; hacked?:boolean;
   policyViolation(directive:string):void;reportCSP(directive:string):void;
   axe: typeof import('axe-core');
+  releaseDocumentCreation:()=>void;
 }

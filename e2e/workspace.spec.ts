@@ -3,6 +3,28 @@ import { test, expect } from '@playwright/test';
 async function ready(page:import('@playwright/test').Page) {
   await page.goto('/'); await page.waitForFunction(() => Boolean(globalThis.Workspace));
 }
+test('new-file transition pauses editing until the created document is active', async ({ page }) => {
+  await ready(page);
+  const originalId = await page.evaluate(() => Workspace.state.active);
+  const editor = page.locator('#editor');
+  await editor.fill('Original document'); await expect(page.locator('#saveStatus')).toHaveText('Saved');
+  await page.evaluate(() => {
+    const create = Workspace.repository.createDocument.bind(Workspace.repository);
+    Workspace.repository.createDocument = async (...args:Parameters<RepositoryAdapter['createDocument']>) => {
+      await new Promise<void>(resolve => { window.releaseDocumentCreation = resolve; });
+      return create(...args);
+    };
+  });
+  await page.locator('#tabNew').click();
+  await expect(editor).toBeDisabled();
+  await page.evaluate(() => window.releaseDocumentCreation());
+  await expect(page.getByRole('tab')).toHaveCount(2);
+  await editor.fill('# Newly created document');
+  await expect(page.locator('#saveStatus')).toHaveText('Saved');
+  expect(await page.evaluate(id => ({ original:Workspace.snapshot.documents.find(d => d.id === id)?.content,
+    active:Workspace.active()?.content }), originalId))
+    .toEqual({ original:'Original document', active:'# Newly created document' });
+});
 test('phase 2: blank initialization, nested Explorer CRUD, tab identity and empty state', async ({ page }) => {
   await ready(page);
   await expect(page.getByRole('tab')).toHaveCount(1);

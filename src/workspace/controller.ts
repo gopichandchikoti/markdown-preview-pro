@@ -5,6 +5,7 @@
   class Controller implements WorkspaceInstance {
     repository:RepositoryAdapter; snapshot:WorkspaceSnapshot; state:WorkspaceView; selected:SelectionRef;
     statuses:Map<string,SaveStatus>; sessions:Map<string,DocumentSession>; query:string; activity:number;
+    pendingDocument = false;
     broadcast?:()=>void; refreshExternal?:()=>Promise<void>;
 
     constructor(repository:RepositoryAdapter, snapshot:WorkspaceSnapshot) {
@@ -70,12 +71,17 @@
       else byId('emptyNew').focus();
     }
     async newFile(tab = false) {
-      let folder = this.destination(tab);
-      if (!folder) { const f = await this.repository.createFolder(null, t('workspace.defaultFolder'));
-        folder = f.id; await this.refresh(); }
-      if (!folder) return;
-      const doc = await this.repository.createDocument(folder);
-      await this.refresh(); this.activate(doc.id); byId('editor').focus(); this.broadcast?.();
+      if (this.pendingDocument) return;
+      root.EditorBridge.capture(this);
+      this.pendingDocument = true; this.render();
+      try {
+        let folder = this.destination(tab);
+        if (!folder) { const f = await this.repository.createFolder(null, t('workspace.defaultFolder'));
+          folder = f.id; await this.refresh(); }
+        if (!folder) return;
+        const doc = await this.repository.createDocument(folder);
+        await this.refresh(); this.activate(doc.id); this.broadcast?.();
+      } finally { this.pendingDocument = false; this.render(); byId('editor').focus(); }
     }
     select(selection:SelectionRef) {
       this.selected = selection;
@@ -107,7 +113,8 @@
         UI.button('action-' + name).disabled = !this.selected?.id || (name === 'duplicate' && this.selected.kind !== 'documents');
       byId('selectionName').textContent = this.snapshot[this.selected?.kind || 'folders']
         .find(r => r.id === this.selected?.id)?.name || t('workspace.select');
-      byId('saveStatus').textContent = t('common.' + (this.statuses.get(this.state.active || '') || 'saved'));
+      byId('saveStatus').textContent = t(this.pendingDocument ? 'workspace.creating' :
+        'common.' + (this.statuses.get(this.state.active || '') || 'saved'));
       root.EditorBridge?.status(this);
     }
   }

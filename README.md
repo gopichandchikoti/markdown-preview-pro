@@ -105,7 +105,7 @@ checks locale parity/placeholders and falls back to English for unsupported devi
     npm audit --audit-level=moderate
 
 Browser tests default to installed Edge. For installed Playwright Chromium, set E2E_CHANNEL=chromium.
-CI installs Chromium. TypeScript 7.0.2 compiles application, tooling and test source into ignored dist/.
+Set E2E_PORT to an unused loopback port when the local app already runs at 4175. CI installs Chromium. TypeScript 7.0.2 compiles application, tooling and test source into ignored dist/.
 Builds also prepare the locked DOMPurify runtime/license and generated content data. Browser JavaScript
 is compiler output; DOMPurify is the only JavaScript vendor asset. React/Next.js are unnecessary for the
 current local-only workflow.
@@ -117,7 +117,7 @@ current local-only workflow.
 | Deployment / release | Not configured; no publish authorization |
 
 Dated phase gates, final command evidence and limitations are in [the architecture guide](docs/ARCHITECTURE.md).
-Local verification on 2026-11-17 passed strict TypeScript, 23 Node tests, 18 Edge browser tests
+Local verification on 2026-11-17 passed strict TypeScript, 23 Node tests, 19 Edge browser tests
 and the dependency audit (zero findings). Hosted results are separate from local results. SAST,
 combined browser/Node coverage and field performance remain gaps; the measured unit subset is below
 inherited 90% coverage targets.

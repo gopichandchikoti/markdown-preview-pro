@@ -5,7 +5,8 @@ test('renders safely, blocks tracking images until consent and keeps formatting 
   const errors:string[] = [];
   const remoteRequests:string[] = [];
   page.on('pageerror', error => errors.push(error.message));
-  page.on('request', request => { if (!request.url().startsWith('http://127.0.0.1:4175')) remoteRequests.push(request.url()); });
+  const baseURL = test.info().project.use.baseURL || 'http://127.0.0.1:4175';
+  page.on('request', request => { if (!request.url().startsWith(baseURL)) remoteRequests.push(request.url()); });
   await page.route('https://tracking.example/**', route => route.fulfill({ status: 200, contentType: 'image/png', body: '' }));
   await page.goto('/');
   const editor = page.getByRole('textbox', { name: 'Markdown source' });

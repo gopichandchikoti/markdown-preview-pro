@@ -71,10 +71,11 @@
     return results.every(Boolean);
   }
   function status(w:WorkspaceInstance) {
+    editor.disabled = !w.active() || w.pendingDocument;
     byId('conflictActions').hidden = w.statuses.get(w.state.active || '') !== 'conflict';
     document.querySelectorAll<HTMLButtonElement>('[data-command]').forEach(control => {
       if (control.tagName !== 'BUTTON') return;
-      control.disabled = !w.active() && !['toggleTheme()', 'toggleOutline()', 'toggleSync()', 'toggleWrap()']
+      control.disabled = (!w.active() || w.pendingDocument) && !['toggleTheme()', 'toggleOutline()', 'toggleSync()', 'toggleWrap()']
         .includes(control.dataset.command || '');
     });
   }

@@ -179,7 +179,8 @@
       "glyph.collapsed": "▸ ",
       "glyph.file": "· ",
       "glyph.status": " • ",
-      "backup.large": "Backup downloaded, but it exceeds the 32 MiB import limit. Keep the original and export individual Markdown files before clearing browser data."
+      "backup.large": "Backup downloaded, but it exceeds the 32 MiB import limit. Keep the original and export individual Markdown files before clearing browser data.",
+      "workspace.creating": "Creating document…"
     }
   }
 }

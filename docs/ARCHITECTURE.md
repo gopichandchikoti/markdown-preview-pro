@@ -256,7 +256,7 @@ up by Playwright, with no reuse of unknown port 4175 services. npm audit checks 
 axe-core is injected only through a test-intercepted same-origin URL; CSP is never disabled for tests.
 
 CI uses frozen install, pinned action SHAs, read-only permissions, timeout, audit, verify and Chromium
-E2E. Hosted execution remains unobserved. There is no deploy/publish/release job or native package.
+E2E. Hosted CI runs are recorded below separately from local evidence. There is no deploy/publish/release job or native package.
 The user subsequently authorized a new feature branch, committing/pushing all changes, and opening a PR.
 Merging, deployment and publication remain unauthorized. No user-profile storage was modified by tests.
 The feature/local-first-workspace-typescript branch opts out of automatic Vercel Git deployment via
@@ -281,7 +281,7 @@ Current run date: 2026-11-17. Final delivery uses the authorized feature branch/
 | Phase 6 backup/QA | Round trip, invalid import, migration/storage and responsive QA | backup/tests/e2e | Final evidence below | 32 MiB import bound |
 
 Final local verification after the TypeScript conversion: npm run build, npm run verify (including
-strict typecheck and 23 Node tests), npm run e2e (18 Edge tests), and npm audit --audit-level=moderate
+strict typecheck and 23 Node tests), npm run e2e (19 Edge tests), and npm audit --audit-level=moderate
 (zero findings) all passed on 2026-11-17. The final rerun includes malformed record-shape rejection and a streamed-import regression. The first axe scan found missing
 splitter values and invalid tablist ownership; both were corrected and scans then passed at 320, 768
 and 1366 CSS pixels with reduced motion. Inspected synthetic screenshots live in docs/assets/.
@@ -349,6 +349,13 @@ webhooks, queues and account identity are not implemented and do not justify new
 
 Final new-standard verification on 2026-11-17: npm run verify passed strict compilation/checks,
 23 Node tests and the working-tree/reachable-history secret scan (zero findings, zero skipped files).
-npm run e2e passed all 18 Edge journeys after streamed import changes. Moderate npm audit reported
+npm run e2e passed all 19 Edge journeys after streamed import changes. Moderate npm audit reported
 zero vulnerabilities. An independently running loopback instance passed an isolated browser smoke
 for edit → task toggle → Saved → reload, with exact content retained and no page errors.
+
+Hosted Chromium on the initial review commit 3d5bc82 exposed a new-file transition race: input could
+reach the preceding document while creation awaited IndexedDB. A deliberately delayed creation test
+reproduced the enabled editor before the fix. The controller now pauses editing and formatting until
+the new document is active, reports Creating document, and restores access on failure. Sync refresh
+defers during the transition. E2E_PORT supports an isolated test server while the user’s local app runs.
+The additional regression asserts both the original and new document bodies by stable ID.

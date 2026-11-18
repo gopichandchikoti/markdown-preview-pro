@@ -8,7 +8,7 @@
     let again = false;
     let stopped = false;
     const refresh = async () => {
-      if (stopped) return;
+      if (stopped || w.pendingDocument) return;
       if (refreshing) { again = true; return; }
       if ([...w.sessions.values()].some(s => s.saving)) return;
       refreshing = true; const activity = w.activity;
