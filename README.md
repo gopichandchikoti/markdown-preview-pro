@@ -28,6 +28,13 @@ included exact-allowlist server. Opening index.html directly is unsupported; ass
   Select a folder before New file. The tab-strip + uses the selected folder or active file’s folder.
 - Click a file to open/activate its existing tab. Tabs from all folders share one horizontally scrolling
   strip. Closing a tab keeps its file; deleting a folder confirms deletion of its entire subtree.
+- Drop `.md` files anywhere in the app, or use **Open Markdown files** with the keyboard/file picker.
+  Each file opens in a new tab named after the original filename, with its Markdown preview ready.
+  Imports go into the selected folder or active file's folder; repeated names get a numbered suffix.
+  Imported names stay fixed until manually renamed. Files are copied into browser storage; changes do
+  not write back to the original files. Empty files and multiple-file drops are supported.
+- Markdown imports require UTF-8 and allow **32 files**, **800,000 bytes per file**, **8 MiB per batch**,
+  plus the document limits below. An invalid file or failed transaction leaves the entire batch unimported.
 - Names are case-insensitive within a folder and item kind. Files normalize to .md; invalid path/device
   names are rejected. IDs survive rename/move. Duplicate uses a new ID and a numbered collision suffix. Folder duplication
   copies the complete subtree to independent IDs.
@@ -62,7 +69,7 @@ counts and asks for Merge (new IDs) or destructive Replace. Replacement is atomi
 workspace. Imports count actual streamed bytes before retention and are limited to **32 MiB**. Exceptionally large legacy exports may exceed that import
 limit; the UI warns you. Keep those originals and export individual Markdown files before clearing data.
 If corrupted storage cannot be validated, raw recovery JSON can require manual inspection rather than
-normal import. No ZIP export or individual Markdown import is included.
+normal import. No ZIP export is included.
 
 Browser data is not a permanent backup. Clearing site data, changing profile/origin/device, or ending an
 incognito session can remove or isolate files. There is no cross-device or native filesystem sync.
@@ -118,7 +125,7 @@ current local-only workflow.
 | Deployment / release | Not configured; no publish authorization |
 
 Dated phase gates, final command evidence and limitations are in [the architecture guide](docs/ARCHITECTURE.md).
-Local verification on 2026-11-17 passed strict TypeScript, 24 Node tests, 20 Edge browser tests
+Local verification on 2026-11-17 passed strict TypeScript, 30 Node tests, 26 Edge browser tests
 and the dependency audit (zero findings). Hosted results are separate from local results. SAST,
 combined browser/Node coverage and field performance remain gaps; the measured unit subset is below
 inherited 90% coverage targets.
@@ -130,9 +137,11 @@ inherited 90% coverage targets.
     src/workspace/             database, migration, repository, Explorer, tabs, sync, backup
     src/parser.ts              existing bounded Markdown parser
     src/security.ts            sanitizer, URL policy and document limits
+    src/files.ts               bounded local-file streams for Markdown and backup import
     src/contracts.d.ts         typed entity, repository and UI contracts
     tsconfig.json              strict compilation to ignored dist/
     public/                    authoritative content model
+    public/index.html          app shell, with styles.css and workspace.css alongside
     tools/                     allowlist server, build/content/check tooling
     tests/ and e2e/            Node and real-browser regression tests
     docs/                      architecture and inspected synthetic screenshots
@@ -141,8 +150,9 @@ The manifest declares MIT. DOMPurify retains its upstream Apache-2.0/MPL-2.0 ter
 [the bundled license](vendor/DOMPurify-LICENSE). Fonts use local system fallbacks. Development dependencies
 include TypeScript, Playwright, jsdom, fake-indexeddb and axe-core; they are not served to application users.
 
-The review branch feature/local-first-workspace-typescript opts out of Vercel automatic deployment
-in vercel.json. Publishing the workspace or changing hosting configuration requires separate approval.
+The review branches feature/local-first-workspace-typescript and feature/markdown-file-drop opt out
+of Vercel automatic deployment in vercel.json. Publishing requires separate approval.
 
-Repository AGENTS.md uses the supplied v2.6.0 standard; .codex/config.toml raises only the project
+Repository AGENTS.md uses the supplied v2.6.0 standard with the required main-first synchronization rule;
+.codex/config.toml raises only the project
 instruction budget. The architecture guide records the applicable controls and remaining QA gaps.

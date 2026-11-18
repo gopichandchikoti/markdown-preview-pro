@@ -26,26 +26,9 @@
     try { return validate(JSONParser.parseJSON(new TextDecoder('utf-8', { fatal: true }).decode(bytes))); }
     catch (error) { if (error instanceof Error && 'code' in error) throw error; return M.fail('backupLimit'); }
   }
-  async function readBackup(file:Pick<Blob,'size'|'stream'>):Promise<Uint8Array> {
-    if (file.size > MAX_BYTES) return M.fail('backupLimit');
-    const reader = file.stream().getReader();
-    const chunks:Uint8Array[] = [];
-    let size = 0;
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        if (value.byteLength > MAX_BYTES - size || chunks.length >= 65536) return M.fail('backupLimit');
-        if (value.byteLength) { size += value.byteLength; chunks.push(value); }
-      }
-    } catch (error) {
-      try { await reader.cancel(); } catch { /* Preserve the original import failure. */ }
-      throw error;
-    } finally { reader.releaseLock(); }
-    const bytes = new Uint8Array(size);
-    let offset = 0;
-    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
-    return bytes;
+  function readBackup(file:Pick<Blob,'size'|'stream'>):Promise<Uint8Array> {
+    const bytes:typeof FileBytes = node ? require('../files') : root.FileBytes;
+    return bytes.read(file, { maxBytes:MAX_BYTES, overflowCode:'backupLimit' });
   }
   function encode(snapshot:Pick<WorkspaceSnapshot,'folders'|'documents'>):BackupData {
     return { format: 'md-preview-pro', version: 1, metadata: { schemaVersion: 1 },

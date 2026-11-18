@@ -25,6 +25,11 @@ button:disabled { opacity: .5; cursor: default; }
 #selectionName { overflow-wrap: anywhere; font-size: 12px; color: var(--fg-muted); }
 .workspace-backups { display: grid; gap: 6px; margin-top: auto; }
 .workspace-main { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+.markdown-import-bar { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:6px 10px;
+  border-bottom:1px solid var(--border); font-size:12px; color:var(--fg-muted); }
+.markdown-drop-hint { position:fixed; inset:12px; z-index:300; display:grid; place-items:center;
+  border:3px dashed var(--primary); border-radius:10px; background:var(--bg-card); color:var(--fg);
+  padding:24px; text-align:center; pointer-events:none; font-weight:600; }
 .shortcuts { max-width: 50%; line-height: 1.5; }
 body { height: 100dvh; }
 .tab-bar { display: flex; min-width: 0; border-bottom: 1px solid var(--border); align-items: stretch; gap: 2px; }
@@ -67,6 +72,7 @@ body { height: 100dvh; }
   #titleSuggestion { max-height: 120px; overflow: auto; }
 }
 @media print {
-  .explorer, .tab-bar, .workspace-feedback, #workspaceNotice, #conflictActions, #titleSuggestion { display: none !important; }
+  .explorer, .tab-bar, .workspace-feedback, .markdown-import-bar, .markdown-drop-hint,
+  #workspaceNotice, #conflictActions, #titleSuggestion { display: none !important; }
   body, .app, .workspace-shell, .workspace-main, .document-panel, .content { height: auto; overflow: visible; display: block; }
 }

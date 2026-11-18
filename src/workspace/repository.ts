@@ -49,6 +49,28 @@
         s.documents.push(document); return document;
       });
     }
+    /** Imported files commit together; collision naming runs inside the same transaction. */
+    importDocuments(folderId:string|null, documents:ReadonlyArray<MarkdownImport>) {
+      return this.change(s => {
+        if (!documents.length || documents.length > M.MAX_IMPORT_FILES) return M.fail('markdownBytes');
+        const now = Date.now();
+        if (!folderId) {
+          let folder = s.folders.find(f => f.parentId === null && f.name === M.text('workspace.defaultFolder'));
+          if (!folder) { folder = { id:M.id(), parentId:null, name:M.text('workspace.defaultFolder'),
+            createdAt:now, updatedAt:now, sortOrder:now }; s.folders.push(folder); }
+          folderId = folder.id;
+        }
+        const imported:WorkspaceDocument[] = [];
+        for (const input of documents) {
+          if (!security.validDocument(input.content)) return M.fail('documentLimit');
+          const name = M.uniqueName(s.documents, 'folderId', folderId, M.normalizeName(input.name, true));
+          const document:WorkspaceDocument = { id:M.id(), folderId, name, content:input.content, titleMode:'manual',
+            revision:M.id(), createdAt:now, updatedAt:now, sortOrder:now };
+          s.documents.push(document); imported.push(document);
+        }
+        return imported;
+      });
+    }
     /** Compare-and-swap: a stale editor can never overwrite another window's revision. */
     save(id:string, expectedRevision:string, content:string) {
       return this.change(s => {
