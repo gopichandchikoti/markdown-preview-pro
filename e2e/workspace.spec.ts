@@ -25,6 +25,19 @@ test('new-file transition pauses editing until the created document is active', 
     active:Workspace.active()?.content }), originalId))
     .toEqual({ original:'Original document', active:'# Newly created document' });
 });
+test('Explorer duplicates a selected folder and its document subtree', async ({ page }) => {
+  await ready(page);
+  await page.locator('#editor').fill('Folder original');
+  await expect(page.locator('#saveStatus')).toHaveText('Saved');
+  await page.getByRole('button', {name:'Duplicate folder',exact:true}).click();
+  await expect(page.getByRole('treeitem', {name:/My Notes \(2\)/})).toBeVisible();
+  const result = await page.evaluate(async () => {
+    const snapshot = await Workspace.repository.snapshot();
+    return { folders:snapshot.folders.length, contents:snapshot.documents.map(d => d.content),
+      ids:new Set([...snapshot.folders, ...snapshot.documents].map(r => r.id)).size };
+  });
+  expect(result).toEqual({folders:2,contents:['Folder original','Folder original'],ids:4});
+});
 test('phase 2: blank initialization, nested Explorer CRUD, tab identity and empty state', async ({ page }) => {
   await ready(page);
   await expect(page.getByRole('tab')).toHaveCount(1);

@@ -110,7 +110,9 @@
       byId('emptyWorkspace').hidden = Boolean(this.active()); byId('documentPanel').hidden = !this.active();
       if (this.active()) byId('documentPanel').setAttribute('aria-labelledby', 'tab-' + this.state.active);
       for (const name of ['rename', 'move', 'delete', 'duplicate'])
-        UI.button('action-' + name).disabled = !this.selected?.id || (name === 'duplicate' && this.selected.kind !== 'documents');
+        UI.button('action-' + name).disabled = !this.selected?.id;
+      byId('action-duplicate').textContent = t(this.selected.kind === 'folders' ?
+        'workspace.duplicateFolder' : 'workspace.duplicate');
       byId('selectionName').textContent = this.snapshot[this.selected?.kind || 'folders']
         .find(r => r.id === this.selected?.id)?.name || t('workspace.select');
       byId('saveStatus').textContent = t(this.pendingDocument ? 'workspace.creating' :

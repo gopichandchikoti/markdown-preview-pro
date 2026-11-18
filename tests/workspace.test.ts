@@ -92,3 +92,20 @@ test('corrupt workspace metadata is rejected without repairing or overwriting or
   assert.equal(raw.documents[0].content, 'Original body');
   assert.equal(raw.documents[0].id, state.documents[0].id); r.close();
 });
+test('folder duplication copies a complete subtree with new independent folder/document identities', async () => {
+  const { repository:r, state } = await fixture('Root body');
+  const root = state.folders[0];
+  const child = await r.createFolder(root.id, 'Child');
+  const nested = await r.createDocument(child.id, 'Nested body', 'Nested');
+  const copy = await r.duplicateFolder(root.id);
+  assert.equal(copy.name, 'My Notes (2)'); assert.notEqual(copy.id, root.id);
+  const snapshot = await r.snapshot();
+  const copiedChild = snapshot.folders.find(folder => folder.parentId === copy.id);
+  assert.ok(copiedChild); assert.notEqual(copiedChild.id, child.id);
+  const copiedDocument = snapshot.documents.find(document => document.folderId === copiedChild.id);
+  assert.ok(copiedDocument); assert.notEqual(copiedDocument.id, nested.id);
+  assert.equal(copiedDocument.content, 'Nested body');
+  await r.save(copiedDocument.id, copiedDocument.revision, 'Changed copy');
+  assert.equal((await r.snapshot()).documents.find(document => document.id === nested.id)?.content, 'Nested body');
+  assert.equal((await r.duplicateFolder(root.id)).name, 'My Notes (3)'); r.close();
+});

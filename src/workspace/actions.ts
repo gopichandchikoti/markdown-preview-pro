@@ -24,7 +24,12 @@
       const session = w.sessions.get(current.id); if (session && 'folderId' in moved) session.document = moved;
     }
     if (action === 'duplicate') {
-      const copy = await w.repository.duplicate(current.id); await w.refresh(); w.activate(copy.id);
+      if (selected.kind === 'folders') {
+        const copy = await w.repository.duplicateFolder(current.id); await w.refresh();
+        w.select({ kind:'folders', id:copy.id }); w.expand(copy.id, true);
+      } else {
+        const copy = await w.repository.duplicate(current.id); await w.refresh(); w.activate(copy.id);
+      }
     }
     if (action === 'delete') {
       if (root.EditorBridge && !await root.EditorBridge.flushAll(w)) return;

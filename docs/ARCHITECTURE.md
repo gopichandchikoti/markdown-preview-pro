@@ -107,7 +107,8 @@ orders are validated. Folder parentId is null for the workspace root; files alwa
 
 Maximum 10,000 entities combined. Sibling names are case-insensitive and unique per kind. Folder/file
 names may coincide. Names are NFC, trimmed, at most 100 characters; unsafe path/control/device names are
-rejected. Files normalize the .md extension. Duplication adds a numbered suffix and new UUID. Ordinary
+rejected. Files normalize the .md extension. Duplication adds a numbered suffix and new UUID; folder duplication atomically remaps the entire
+subtree to independent folder/document IDs while preserving content. Ordinary
 writes preserve the original 200,000 character / 10,000 line / 10,000 character-per-line limits.
 
 Initialization reads md-preview-pro-content only when the transactional initialized marker is absent.
@@ -281,7 +282,7 @@ Current run date: 2026-11-17. Final delivery uses the authorized feature branch/
 | Phase 6 backup/QA | Round trip, invalid import, migration/storage and responsive QA | backup/tests/e2e | Final evidence below | 32 MiB import bound |
 
 Final local verification after the TypeScript conversion: npm run build, npm run verify (including
-strict typecheck and 23 Node tests), npm run e2e (19 Edge tests), and npm audit --audit-level=moderate
+strict typecheck and 24 Node tests), npm run e2e (20 Edge tests), and npm audit --audit-level=moderate
 (zero findings) all passed on 2026-11-17. The final rerun includes malformed record-shape rejection and a streamed-import regression. The first axe scan found missing
 splitter values and invalid tablist ownership; both were corrected and scans then passed at 320, 768
 and 1366 CSS pixels with reduced motion. Inspected synthetic screenshots live in docs/assets/.
@@ -349,7 +350,7 @@ webhooks, queues and account identity are not implemented and do not justify new
 
 Final new-standard verification on 2026-11-17: npm run verify passed strict compilation/checks,
 23 Node tests and the working-tree/reachable-history secret scan (zero findings, zero skipped files).
-npm run e2e passed all 19 Edge journeys after streamed import changes. Moderate npm audit reported
+npm run e2e passed all 20 Edge journeys after streamed import changes. Moderate npm audit reported
 zero vulnerabilities. An independently running loopback instance passed an isolated browser smoke
 for edit → task toggle → Saved → reload, with exact content retained and no page errors.
 
@@ -359,3 +360,9 @@ reproduced the enabled editor before the fix. The controller now pauses editing 
 the new document is active, reports Creating document, and restores access on failure. Sync refresh
 defers during the transition. E2E_PORT supports an isolated test server while the user’s local app runs.
 The additional regression asserts both the original and new document bodies by stable ID.
+
+Hosted Linux/Chromium verification for timing-fix commit 08c3ab8 succeeded on both
+[PR CI](https://github.com/gopichandchikoti/markdown-preview-pro/actions/runs/44218007571) and
+[push CI](https://github.com/gopichandchikoti/markdown-preview-pro/actions/runs/44218002902).
+Final acceptance also added atomic folder-subtree duplication with a unit independence check and a
+real-browser Explorer journey. The final expanded local suites contain 24 Node and 20 Edge tests.

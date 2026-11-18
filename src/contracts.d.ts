@@ -52,6 +52,7 @@ interface RepositoryAdapter {
   move(kind: 'documents', id: string, parentId: string, revision: string): Promise<WorkspaceDocument>;
   move(kind: EntityKind, id: string, parentId: string | null, revision?: string): Promise<WorkspaceFolder | WorkspaceDocument>;
   duplicate(id: string): Promise<WorkspaceDocument>;
+  duplicateFolder(id:string):Promise<WorkspaceFolder>;
   remove(kind: EntityKind, id: string, generation: number): Promise<void>;
   close(): void;
 }

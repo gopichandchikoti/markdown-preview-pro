@@ -29,7 +29,8 @@ included exact-allowlist server. Opening index.html directly is unsupported; ass
 - Click a file to open/activate its existing tab. Tabs from all folders share one horizontally scrolling
   strip. Closing a tab keeps its file; deleting a folder confirms deletion of its entire subtree.
 - Names are case-insensitive within a folder and item kind. Files normalize to .md; invalid path/device
-  names are rejected. IDs survive rename/move. Duplicate uses a new ID and a numbered collision suffix.
+  names are rejected. IDs survive rename/move. Duplicate uses a new ID and a numbered collision suffix. Folder duplication
+  copies the complete subtree to independent IDs.
 - A heading or meaningful text produces an offline suggested filename. Use it, keep the current name,
   or revert an accepted suggestion during the current session. Manual choices are never overwritten.
 - Each tab retains edits, selection and scroll while switching. Tabs/order, selected/expanded folders,
@@ -117,7 +118,7 @@ current local-only workflow.
 | Deployment / release | Not configured; no publish authorization |
 
 Dated phase gates, final command evidence and limitations are in [the architecture guide](docs/ARCHITECTURE.md).
-Local verification on 2026-11-17 passed strict TypeScript, 23 Node tests, 19 Edge browser tests
+Local verification on 2026-11-17 passed strict TypeScript, 24 Node tests, 20 Edge browser tests
 and the dependency audit (zero findings). Hosted results are separate from local results. SAST,
 combined browser/Node coverage and field performance remain gaps; the measured unit subset is below
 inherited 90% coverage targets.
