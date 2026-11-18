@@ -5,7 +5,7 @@
   "main": "index.html",
   "scripts": {
     "start": "node dist/tools/server.js",
-    "build": "tsc && node dist/tools/vendor.js && node dist/tools/content.js && tsc",
+    "build": "tsc && node dist/tools/vendor.js && node dist/tools/content.js && tsc && node dist/tools/copy-assets.js",
     "check": "npm run typecheck && node dist/tools/check.js",
     "test": "node --test dist/tests/*.test.js",
     "e2e": "playwright test",
