@@ -3,12 +3,12 @@ export {};
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-const root = join(__dirname, '../..');
-const assets = new Map<string,readonly [string,string]>([
-  ['/', ['index.html', 'text/html; charset=utf-8']],
-  ['/index.html', ['index.html', 'text/html; charset=utf-8']],
-  ['/styles.css', ['styles.css', 'text/css; charset=utf-8']],
-  ['/workspace.css', ['workspace.css', 'text/css; charset=utf-8']],
+const root = join(__dirname, '..', '..');
+const assets = new Map<string, readonly [string, string]>([
+  ['/', ['public/index.html', 'text/html; charset=utf-8']],
+  ['/index.html', ['public/index.html', 'text/html; charset=utf-8']],
+  ['/styles.css', ['public/styles.css', 'text/css; charset=utf-8']],
+  ['/workspace.css', ['public/workspace.css', 'text/css; charset=utf-8']],
   ['/public/markdown-preview-pro.model.json', ['public/markdown-preview-pro.model.json', 'application/json; charset=utf-8']],
   ...['dom.js', 'app.js', 'parser.js', 'security.js', 'content.js', 'content-data.js', 'json.js',
     'workspace/model.js', 'workspace/db.js', 'workspace/migration.js', 'workspace/repository.js',
@@ -16,13 +16,12 @@ const assets = new Map<string,readonly [string,string]>([
     'workspace/actions.js', 'workspace/controller.js', 'workspace/start.js', 'workspace/title.js',
     'workspace/shortcuts.js', 'workspace/sync.js', 'workspace/backup.js',
     'editor/render.js', 'editor/commands.js', 'editor/layout.js', 'editor/bridge.js', 'editor/start.js'
-  ].map((name):[string,readonly [string,string]] => ['/src/' + name, ['dist/src/' + name, 'text/javascript; charset=utf-8']]),
+  ].map((name): [string, readonly [string, string]] => ['/src/' + name, ['dist/src/' + name, 'text/javascript; charset=utf-8']]),
   ['/vendor/purify.min.js', ['vendor/purify.min.js', 'text/javascript; charset=utf-8']],
 ]);
 const csp = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
   "img-src https: http: data:; font-src 'self'; connect-src 'none'; object-src 'none'; " +
-  "base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
-
+  "base-uri 'none'; form-action 'none'; frame-ancestors 'none';";
 function createAppServer() {
   return createServer(async (request, response) => {
     response.setHeader('Content-Security-Policy', csp);
@@ -48,7 +47,6 @@ function createAppServer() {
     } catch { response.writeHead(500).end('Asset unavailable. Run npm run build.'); }
   });
 }
-
 module.exports = { createAppServer };
 if (require.main === module) {
   const port = Number(process.env.PORT || 4175);
