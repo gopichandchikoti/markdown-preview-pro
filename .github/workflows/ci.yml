@@ -3,7 +3,8 @@ on: [push, pull_request]
 permissions:
   contents: read
 jobs:
-  verify:
+  # Protected main requires this exact GitHub Actions check name.
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

@@ -258,6 +258,11 @@ axe-core is injected only through a test-intercepted same-origin URL; CSP is nev
 
 CI uses frozen install, pinned action SHAs, read-only permissions, timeout, audit, verify and Chromium
 E2E. Hosted CI runs are recorded below separately from local evidence. There is no deploy/publish/release job or native package.
+The CI job reports the stable check name `build`, which protected `main` requires from GitHub Actions.
+The 2026-11-17 PR check regression reproduced a missing `build` context while both `verify` runs passed.
+Restoring the job identifier fixes that contract without changing protection settings or verification steps.
+Renaming this check requires coordinating its required-check contract; successful checks under another
+name do not satisfy it. See [GitHub's troubleshooting guidance](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks).
 The user subsequently authorized a new feature branch, committing/pushing all changes, and opening a PR.
 Merging, deployment and publication remain unauthorized. No user-profile storage was modified by tests.
 The feature/local-first-workspace-typescript branch opts out of automatic Vercel Git deployment via
