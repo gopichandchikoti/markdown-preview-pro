@@ -9,5 +9,7 @@ playwright-report/
 coverage/
 dist/
 .env
+public/src/
+public/vendor/
 .env.*
 !.env.example
