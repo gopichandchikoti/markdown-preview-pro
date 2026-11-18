@@ -1,17 +1,24 @@
-name: CI
-on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
+name: Markdown quality
+on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
+  # Protected main requires this exact GitHub Actions check name.
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          node-version: 20
-      - run: npm install
-      - run: npm run build --if-present
-      - run: npm test --if-present
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - run: npm audit --audit-level=moderate
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+        env:
+          E2E_CHANNEL: chromium

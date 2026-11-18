@@ -4,3 +4,10 @@ node_modules/
 .vscode/
 .idea/
 *.log
+test-results/
+playwright-report/
+coverage/
+dist/
+.env
+.env.*
+!.env.example

@@ -4,7 +4,14 @@
   "description": "An interactive, responsive Markdown editor and live preview web application with dark mode",
   "main": "index.html",
   "scripts": {
-    "start": "npx serve ."
+    "start": "node dist/tools/server.js",
+    "build": "tsc && node dist/tools/vendor.js && node dist/tools/content.js && tsc",
+    "check": "npm run typecheck && node dist/tools/check.js",
+    "test": "node --test dist/tests/*.test.js",
+    "e2e": "playwright test",
+    "verify": "npm run build && npm run check && npm test && npm run scan:secrets",
+    "scan:secrets": "node dist/tools/secrets.js",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "markdown",
@@ -15,5 +22,20 @@
     "portfolio"
   ],
   "author": "Gopichand Chikoti",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "dompurify": "3.4.17"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1",
+    "@types/jsdom": "30.0.0",
+    "@types/node": "22.20.5",
+    "axe-core": "4.14.1",
+    "fake-indexeddb": "6.2.8",
+    "jsdom": "26.1.0",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
 }
