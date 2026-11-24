@@ -18,13 +18,11 @@
       <div class="toolbar-left">
         <button class="tool-btn" id="explorerToggle" aria-controls="explorer" aria-expanded="true" data-text="glyph.menu" data-label="workspace.toggle"></button>
         <!-- Logo -->
-        <div style="display:flex;align-items:center;gap:8px;margin-right:8px;">
+        <div class="brand">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M8 8l2 4-2 4"></path><path d="M14 8h3"></path><path d="M14 12h3"></path><path d="M14 16h3"></path></svg>
-          <span style="font-weight:700;font-size:14px;"><span data-text="app.name"></span></span>
+          <span class="brand-name"><span data-text="app.name"></span></span>
         </div>
-        <div class="toolbar-sep"></div>
-
-        <!-- Format buttons -->
+        <div class="tool-group"><!-- Format buttons -->
         <button class="tool-btn" data-command="insertFormat('**','**')" data-tip-key="ui.bold.ctrl.b">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 4h8a4 4 0 0 1 0 8H6z"></path><path d="M6 12h9a4 4 0 0 1 0 8H6z"></path></svg>
         </button>
@@ -33,13 +31,11 @@
         </button>
         <button class="tool-btn" data-command="insertFormat('~~','~~')" data-tip-key="ui.strikethrough">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 4H9a3 3 0 0 0 0 6h6a3 3 0 0 1 0 6H8"></path><line x1="4" y1="12" x2="20" y2="12"></line></svg>
-        </button>
-        <div class="toolbar-sep"></div>
-        <button class="tool-btn" data-command="insertPrefix('# ')" data-tip-key="ui.heading.1"><span class="label"><span data-text="ui.h1"></span></span></button>
+        </button></div>
+        <div class="tool-group"><button class="tool-btn" data-command="insertPrefix('# ')" data-tip-key="ui.heading.1"><span class="label"><span data-text="ui.h1"></span></span></button>
         <button class="tool-btn" data-command="insertPrefix('## ')" data-tip-key="ui.heading.2"><span class="label"><span data-text="ui.h2"></span></span></button>
-        <button class="tool-btn" data-command="insertPrefix('### ')" data-tip-key="ui.heading.3"><span class="label"><span data-text="ui.h3"></span></span></button>
-        <div class="toolbar-sep"></div>
-        <button class="tool-btn" data-command="insertPrefix('- ')" data-tip-key="ui.bullet.list">
+        <button class="tool-btn" data-command="insertPrefix('### ')" data-tip-key="ui.heading.3"><span class="label"><span data-text="ui.h3"></span></span></button></div>
+        <div class="tool-group"><button class="tool-btn" data-command="insertPrefix('- ')" data-tip-key="ui.bullet.list">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><circle cx="4" cy="6" r="1" fill="currentColor"></circle><circle cx="4" cy="12" r="1" fill="currentColor"></circle><circle cx="4" cy="18" r="1" fill="currentColor"></circle></svg>
         </button>
         <button class="tool-btn" data-command="insertPrefix('1. ')" data-tip-key="ui.numbered.list">
@@ -47,9 +43,8 @@
         </button>
         <button class="tool-btn" data-command="insertPrefix('- [ ] ')" data-tip-key="ui.task.list">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="6" height="6" rx="1"></rect><line x1="12" y1="8" x2="21" y2="8"></line><rect x="3" y="13" width="6" height="6" rx="1"></rect><path d="M4.5 16.5l1.5 1.5 3-3"></path><line x1="12" y1="16" x2="21" y2="16"></line></svg>
-        </button>
-        <div class="toolbar-sep"></div>
-        <button class="tool-btn" data-command="insertPrefix('> ')" data-tip-key="ui.blockquote">
+        </button></div>
+        <div class="tool-group"><button class="tool-btn" data-command="insertPrefix('> ')" data-tip-key="ui.blockquote">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z"></path><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3z"></path></svg>
         </button>
         <button class="tool-btn" data-command="insertFormat('`','`')" data-tip-key="ui.inline.code">
@@ -66,8 +61,10 @@
         </button>
         <button class="tool-btn" data-command="insertHR()" data-tip-key="ui.divider">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="12" x2="22" y2="12"></line></svg>
-        </button>
+        </button></div>
       </div>
+
+      
 
       <div class="toolbar-right">
         <!-- Theme toggle -->
@@ -79,10 +76,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
           </div>
         </div>
-
-        <div class="toolbar-sep"></div>
-
-        <button class="tool-btn" id="outlineBtn" data-command="toggleOutline()" data-tip-key="ui.outline">
+        <div class="tool-group"><button class="tool-btn" id="outlineBtn" data-command="toggleOutline()" data-tip-key="ui.outline">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="10" y2="6"></line><line x1="6" y1="12" x2="16" y2="12"></line><line x1="6" y1="18" x2="13" y2="18"></line><circle cx="3" cy="12" r="1" fill="currentColor"></circle><circle cx="3" cy="18" r="1" fill="currentColor"></circle></svg>
         </button>
         <button class="tool-btn active" id="syncBtn" data-command="toggleSync()" data-tip-key="ui.sync.scroll">
@@ -90,9 +84,8 @@
         </button>
         <button class="tool-btn active" id="wrapBtn" data-command="toggleWrap()" data-tip-key="ui.word.wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"></path><path d="M3 12h15a3 3 0 1 1 0 6h-4"></path><polyline points="13 16 11 18 13 20"></polyline><path d="M3 18h4"></path></svg>
-        </button>
-        <div class="toolbar-sep"></div>
-        <button class="tool-btn" data-command="exportMarkdown()" data-tip-key="ui.download.md">
+        </button></div>
+        <div class="tool-group"><button class="tool-btn" data-command="exportMarkdown()" data-tip-key="ui.download.md">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
         </button>
         <button class="tool-btn" data-command="copyHTML()" data-tip-key="ui.copy.html">
@@ -100,10 +93,10 @@
         </button>
         <button class="tool-btn" data-command="toggleSearch()" data-tip-key="ui.find.ctrl.f">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        </button>
-        <button class="tool-btn" data-command="clearEditor()" data-tip-key="ui.clear">
+        </button></div>
+        <div class="tool-group tool-group-danger"><button class="tool-btn" data-command="clearEditor()" data-tip-key="ui.clear">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-        </button>
+        </button></div>
       </div>
     </div>
 
@@ -113,10 +106,12 @@
         <div class="explorer-create"><button id="explorerNew" data-text="workspace.newFile"></button><button id="folderNew" data-text="workspace.newFolder"></button></div>
         <input type="search" id="explorerFilter" data-label="workspace.filter" data-placeholder="workspace.filter">
         <ul role="tree" id="explorerTree" data-label="workspace.explorer"></ul>
+        <div class="inspector">
         <p id="selectionName"></p>
         <div class="explorer-actions">
           <button id="action-rename" data-text="workspace.rename"></button><button id="action-move" data-text="workspace.move"></button>
           <button id="action-duplicate" data-text="workspace.duplicate"></button><button id="action-delete" data-text="workspace.delete"></button>
+        </div>
         </div>
         <div class="workspace-backups"><button id="exportWorkspace" data-text="backup.export"></button><button id="importWorkspace" data-text="backup.import"></button><input type="file" id="backupFile" accept=".json,application/json" hidden=""><button id="persistentStorage" data-text="storage.persist"></button></div>
       </aside>
