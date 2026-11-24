@@ -102,8 +102,9 @@
 
     <div class="workspace-shell" id="workspaceShell">
       <aside id="explorer" class="explorer" data-label="workspace.explorer">
-        <div class="explorer-header"><h2 data-text="workspace.explorer"></h2><button id="explorerClose" data-label="workspace.close" data-text="glyph.close"></button></div>
+        <div class="explorer-header"><h2 data-text="workspace.explorer"></h2><button id="selectToggle" type="button" aria-pressed="false" data-text="workspace.selectMode"></button><button id="explorerClose" data-label="workspace.close" data-text="glyph.close"></button></div>
         <div class="explorer-create"><button id="explorerNew" data-text="workspace.newFile"></button><button id="folderNew" data-text="workspace.newFolder"></button></div>
+        <div id="selectionBar" hidden><label class="select-all"><input type="checkbox" id="selectAll"><span data-text="workspace.selectAll"></span></label><span id="selectionCount" role="status"></span><button id="deleteSelected" type="button" data-text="workspace.deleteSelected"></button></div>
         <input type="search" id="explorerFilter" data-label="workspace.filter" data-placeholder="workspace.filter">
         <ul role="tree" id="explorerTree" data-label="workspace.explorer"></ul>
         <div class="inspector">

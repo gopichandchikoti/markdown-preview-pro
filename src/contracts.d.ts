@@ -42,7 +42,7 @@ interface DatabaseAPI {
 }
 interface RepositoryAdapter {
   db: IDBDatabase;
-  initialize(readLegacy: () => string | null, names?: {folder:string;file:string}): Promise<WorkspaceSnapshot>;
+  initialize(readLegacy: () => string | null, names?: {folder:string;file:string;welcome?:string}): Promise<WorkspaceSnapshot>;
   snapshot(): Promise<WorkspaceSnapshot>;
   change<T>(transform: (state: WorkspaceSnapshot) => T): Promise<T>;
   createFolder(parentId: string | null, name: string): Promise<WorkspaceFolder>;
@@ -57,6 +57,7 @@ interface RepositoryAdapter {
   duplicate(id: string): Promise<WorkspaceDocument>;
   duplicateFolder(id:string):Promise<WorkspaceFolder>;
   remove(kind: EntityKind, id: string, generation: number): Promise<void>;
+  removeMany(items: ReadonlyArray<{kind:EntityKind;id:string}>, generation: number): Promise<void>;
   close(): void;
 }
 interface SelectionRef { id: string | null; kind: EntityKind }
@@ -65,6 +66,8 @@ interface WorkspaceInstance {
   statuses: Map<string, SaveStatus>; sessions: Map<string, DocumentSession>; query: string; activity: number;
   pendingDocument:boolean;
   pendingLabel:string;
+  multi:Set<string>; selectMode:boolean;
+  kindOf(id:string):EntityKind; check(id:string, range?:boolean):void; checkAll(on:boolean):void; setSelectMode(on:boolean):void;
   active(): WorkspaceDocument | undefined; generation(): number; destination(tab?:boolean): string | null | undefined;
   persist(): void; notice(message:string): void; error(error:unknown): void;
   run(action:()=>Promise<unknown>|unknown): Promise<boolean>; refresh(): Promise<void>;
@@ -91,7 +94,7 @@ declare var Content: ContentAdapter;
 declare var WorkspaceModel: ModelAPI;
 declare var WorkspaceDB: DatabaseAPI;
 declare var WorkspaceMigration: {
-  initialize(state:WorkspaceSnapshot, readLegacy:()=>string|null, names:{folder:string;file:string}):
+  initialize(state:WorkspaceSnapshot, readLegacy:()=>string|null, names:{folder:string;file:string;welcome?:string}):
     {documentId:string;content:string}|undefined;
 };
 declare var WorkspaceRepository: { Repository: new(db:IDBDatabase)=>RepositoryAdapter };
@@ -129,6 +132,7 @@ declare var WorkspaceTabs: {renderTabs(options:TabsOptions):void};
 interface ExplorerOptions {
   container:HTMLElement;snapshot:WorkspaceSnapshot;state:WorkspaceView;selected:SelectionRef;query:string;
   select(selection:SelectionRef):void;open(id:string):void;expand(id:string):void;
+  mode:boolean;checked:ReadonlySet<string>;check(id:string,range:boolean):void;
 }
 declare var WorkspaceExplorer: {
   renderExplorer(options:ExplorerOptions):void;

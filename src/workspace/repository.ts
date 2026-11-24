@@ -8,7 +8,7 @@
   class Repository {
     db:IDBDatabase;
     constructor(db:IDBDatabase) { this.db = db; }
-    async initialize(readLegacy:()=>string|null, names = { folder: M.text('workspace.defaultFolder'), file: M.text('workspace.defaultFile') }) {
+    async initialize(readLegacy:()=>string|null, names = { folder: M.text('workspace.defaultFolder'), file: M.text('workspace.defaultFile'), welcome: M.text('guide.welcome') }) {
       const imported = await DB.transact(this.db, 'readwrite', s => {
         const result = migration.initialize(s, readLegacy, names); M.validateTree(s); return result;
       });
@@ -153,6 +153,17 @@
           for (const f of s.folders) if (f.parentId && removed.has(f.parentId)) removed.add(f.id);
         s.folders = s.folders.filter(f => !removed.has(f.id));
         s.documents = s.documents.filter(d => !removed.has(d.folderId));
+      });
+    }
+    removeMany(items:ReadonlyArray<{kind:EntityKind;id:string}>, expectedGeneration:number) {
+      return this.change(s => {
+        if (M.generation(s) !== expectedGeneration) M.fail('conflict');
+        const removed = new Set(items.filter(i => i.kind === 'folders').map(i => i.id));
+        for (let depth = 0; depth < M.MAX_DEPTH; depth++)
+          for (const f of s.folders) if (f.parentId && removed.has(f.parentId)) removed.add(f.id);
+        const files = new Set(items.filter(i => i.kind === 'documents').map(i => i.id));
+        s.folders = s.folders.filter(f => !removed.has(f.id));
+        s.documents = s.documents.filter(d => !files.has(d.id) && !removed.has(d.folderId));
       });
     }
     close() { this.db.close(); }

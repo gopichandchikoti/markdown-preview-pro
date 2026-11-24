@@ -7,6 +7,7 @@
     statuses:Map<string,SaveStatus>; sessions:Map<string,DocumentSession>; query:string; activity:number;
     pendingDocument = false;
     pendingLabel = 'workspace.creating';
+    multi = new Set<string>(); selectMode = false; anchor:string|null = null;
     broadcast?:()=>void; refreshExternal?:()=>Promise<void>;
 
     constructor(repository:RepositoryAdapter, snapshot:WorkspaceSnapshot) {
@@ -35,6 +36,7 @@
     }
     async refresh() {
       const snapshot = await this.repository.snapshot(); this.snapshot = snapshot;
+      for (const id of this.multi) if (!snapshot.folders.some(f => f.id === id) && !snapshot.documents.some(d => d.id === id)) this.multi.delete(id);
       const valid = root.WorkspaceState.reconcile(this.state, snapshot);
       for (const [id, session] of this.sessions) if (session.dirty && !snapshot.documents.some(d => d.id === id)) {
         snapshot.documents.push({ ...session.document, content: session.content });
@@ -81,7 +83,7 @@
         if (!folder) { const f = await this.repository.createFolder(null, t('workspace.defaultFolder'));
           folder = f.id; await this.refresh(); }
         if (!folder) return;
-        const doc = await this.repository.createDocument(folder);
+        const doc = await this.repository.createDocument(folder, t('guide.welcome'));
         await this.refresh(); this.activate(doc.id); this.broadcast?.();
       } finally { this.pendingDocument = false; this.render(); byId('editor').focus(); }
     }
@@ -95,6 +97,18 @@
       if (force === true || (force !== false && !expanded.has(id))) expanded.add(id); else expanded.delete(id);
       this.state.expanded = [...expanded]; this.render(); this.persist();
     }
+    kindOf(id:string):EntityKind { return this.snapshot.folders.some(f => f.id === id) ? 'folders' : 'documents'; }
+    visibleIds() { return [...byId('explorerTree').querySelectorAll<HTMLElement>('[role=treeitem]')].map(e => e.dataset.id || '').filter(Boolean); }
+    check(id:string, range = false) {
+      const ids = this.visibleIds();
+      if (range && this.anchor && ids.includes(this.anchor) && ids.includes(id)) {
+        const a = ids.indexOf(this.anchor), b = ids.indexOf(id);
+        for (const v of ids.slice(Math.min(a, b), Math.max(a, b) + 1)) this.multi.add(v);
+      } else { if (this.multi.has(id)) this.multi.delete(id); else this.multi.add(id); this.anchor = id; }
+      this.render();
+    }
+    checkAll(on:boolean) { for (const id of this.visibleIds()) { if (on) this.multi.add(id); else this.multi.delete(id); } this.render(); }
+    setSelectMode(on:boolean) { this.selectMode = on; if (!on) { this.multi.clear(); this.anchor = null; } this.render(); }
     sidebar(visible = !this.state.sidebar) {
       this.state.sidebar = visible; this.render(); this.persist();
       if (visible) byId('explorerFilter').focus();
@@ -104,6 +118,7 @@
         statuses: this.statuses, activate: (id, focus) => this.activate(id, focus), close: id => this.run(() => this.close(id)) });
       root.WorkspaceExplorer.renderExplorer({ container: byId('explorerTree'), snapshot: this.snapshot,
         state: this.state, selected: this.selected, query: this.query,
+        mode: this.selectMode, checked: this.multi, check: (id, range) => this.check(id, range),
         select: selected => this.select(selected), open: id => this.activate(id), expand: id => this.expand(id) });
       byId('workspaceShell').classList.toggle('sidebar-hidden', !this.state.sidebar);
       byId('explorerToggle').setAttribute('aria-expanded', String(this.state.sidebar));
@@ -117,6 +132,13 @@
         'workspace.duplicateFolder' : 'workspace.duplicate');
       byId('selectionName').textContent = this.snapshot[this.selected?.kind || 'folders']
         .find(r => r.id === this.selected?.id)?.name || t('workspace.select');
+      const ids = this.visibleIds(), picked = ids.filter(id => this.multi.has(id)).length, master = UI.input('selectAll');
+      byId('explorer').classList.toggle('select-mode', this.selectMode); byId('selectionBar').hidden = !this.selectMode;
+      UI.button('selectToggle').textContent = t(this.selectMode ? 'workspace.selectDone' : 'workspace.selectMode');
+      UI.button('selectToggle').setAttribute('aria-pressed', String(this.selectMode));
+      master.checked = ids.length > 0 && picked === ids.length; master.indeterminate = picked > 0 && picked < ids.length; master.disabled = !ids.length;
+      byId('selectionCount').textContent = t('workspace.selectedCount', { count: this.multi.size });
+      UI.button('deleteSelected').disabled = !this.multi.size;
       UI.button('markdownOpen').disabled = this.pendingDocument;
       byId('saveStatus').textContent = t(this.pendingDocument ? this.pendingLabel :
         'common.' + (this.statuses.get(this.state.active || '') || 'saved'));
@@ -130,7 +152,7 @@
       database = await root.WorkspaceDB.openDatabase();
       const repository = new root.WorkspaceRepository.Repository(database);
       const snapshot = await repository.initialize(() => localStorage.getItem('md-preview-pro-content'),
-        { folder: t('workspace.defaultFolder'), file: t('workspace.defaultFile') });
+        { folder: t('workspace.defaultFolder'), file: t('workspace.defaultFile'), welcome: t('guide.welcome') });
       root.Workspace = new Controller(repository, snapshot); root.WorkspaceActions.bind(root.Workspace);
       root.EditorBridge?.start(root.Workspace); root.Workspace.render(); root.WorkspaceSync?.start(root.Workspace);
       matchMedia('(max-width: 768px)').addEventListener('change', () => {

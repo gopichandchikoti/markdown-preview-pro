@@ -1,7 +1,8 @@
 (function (root) {
   'use strict';
-  function renderExplorer({ container, snapshot, state, selected, query, select, open, expand }:ExplorerOptions) {
+  function renderExplorer({ container, snapshot, state, selected, query, select, open, expand, mode, checked, check }:ExplorerOptions) {
     const activeId = document.activeElement instanceof HTMLElement && container.contains(document.activeElement) ? document.activeElement.dataset.id : null;
+    const activeCheck = document.activeElement instanceof HTMLInputElement && container.contains(document.activeElement) ? document.activeElement.dataset.checkId : null;
     container.replaceChildren();
     const matches = new Set();
     for (const r of [...snapshot.folders, ...snapshot.documents]) {
@@ -20,7 +21,7 @@
         const button = document.createElement('button'); button.type = 'button';
         button.setAttribute('role', 'treeitem'); button.setAttribute('aria-level', String(depth));
         button.setAttribute('aria-selected', String(selected?.id === r.id));
-        button.dataset.id = r.id; button.style.paddingLeft = (8 + (depth - 1) * 14) + 'px';
+        button.dataset.id = r.id; button.style.paddingLeft = (8 + (depth - 1) * 14 + (mode ? 26 : 0)) + 'px';
         button.tabIndex = (activeId || selected?.id || snapshot.folders[0]?.id) === r.id ? 0 : -1;
         const expanded = query || state.expanded.includes(r.id);
         if (folder) button.setAttribute('aria-expanded', String(Boolean(expanded)));
@@ -30,6 +31,12 @@
           select({ id: r.id, kind: folder ? 'folders' : 'documents' });
           if (folder) expand(r.id); else open(r.id);
         });
+        if (mode) {
+          const box = document.createElement('input'); box.type = 'checkbox'; box.className = 'row-check';
+          box.dataset.checkId = r.id; box.checked = checked.has(r.id);
+          box.setAttribute('aria-label', root.Content.t('workspace.selectItem', { name: r.name }));
+          box.addEventListener('click', event => check(r.id, event.shiftKey)); item.append(box);
+        }
         item.append(button); group.append(item);
         if (folder && expanded) {
           const nested = document.createElement('ul'); nested.setAttribute('role', 'group');
@@ -42,6 +49,7 @@
     if (!container.children.length) { const li = document.createElement('li');
       li.textContent = root.Content.t('workspace.noResults'); li.setAttribute('role', 'none'); container.append(li); }
     if (activeId) container.querySelector<HTMLButtonElement>(`[data-id="${activeId}"]`)?.focus({ preventScroll: true });
+    if (activeCheck) container.querySelector<HTMLInputElement>(`input[data-check-id="${activeCheck}"]`)?.focus({ preventScroll: true });
   }
   function keyboard(container:HTMLElement, expand:(id:string)=>void, collapse:(id:string)=>void, select:(id:string)=>void) {
     container.addEventListener('keydown', event => {
