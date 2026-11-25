@@ -123,7 +123,7 @@ test('drag feedback clears on leave, drops work at 320px, and storage errors nev
   await page.evaluate(() => { Workspace.repository.importDocuments = async () => {
     throw new DOMException('quota','QuotaExceededError'); }; });
   await dropMarkdown(page,'Failed.md','# Not saved');
-  await expect(page.locator('#workspaceNotice')).toContainText('Operation failed');
+  await expect(page.locator('#workspaceNotice')).toContainText("That didn't work. Your edits are still here; try again.");
   await expect(page.getByRole('tab',{name:'Failed.md'})).toHaveCount(0);
   await expect(page.locator('#editor')).toHaveValue('# Narrow');
   await expect(page.locator('#editor')).toBeEnabled();

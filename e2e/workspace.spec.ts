@@ -235,6 +235,7 @@ test('phase 3: 20 documents, 12 ordered tabs, independent content, caret, scroll
 test('Select mode: Select all and individual checkboxes delete several items at once', async ({ page }) => {
   await ready(page);
   await page.getByRole('button', {name:'New folder',exact:true}).click();
+  await page.getByLabel('Folder name', { exact: true }).fill('Projects');
   await page.getByRole('button', {name:'Confirm',exact:true}).click();
   await page.locator('#selectToggle').click();
   await expect(page.locator('#selectionBar')).toBeVisible();

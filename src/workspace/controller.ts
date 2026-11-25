@@ -91,8 +91,12 @@
         if (!folder) { const f = await this.repository.createFolder(null, t('workspace.defaultFolder'));
           folder = f.id; await this.refresh(); }
         if (!folder) return;
-        await seedGuideImage(this.repository);
+        // Seed the guide image without blocking document creation: the
+        // welcome guide references it, but creation must start at once so
+        // the editor unblocks as soon as the document exists.
+        const seeding = seedGuideImage(this.repository);
         const doc = await this.repository.createDocument(folder, t('guide.welcome'));
+        await seeding;
         await this.refresh(); this.activate(doc.id); this.broadcast?.();
       } finally { this.pendingDocument = false; this.render(); byId('editor').focus(); }
     }

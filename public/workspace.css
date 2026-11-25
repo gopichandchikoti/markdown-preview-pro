@@ -129,7 +129,7 @@ body { height: 100dvh; }
 .stat-pill { background: transparent; border-radius: 0; padding: 0 12px; border-left: 1px solid var(--border);
   font-family: 'Cascadia Code', 'Cascadia Mono', 'SF Mono', Consolas, monospace; font-size: 11.5px; }
 .stat-pill:first-child { border-left: 0; padding-left: 0; }
-.shortcuts { max-width: 50%; line-height: 1.5; font-size: 11.5px; text-align: right; color: var(--fg-muted); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shortcuts { max-width: 50%; line-height: 1.5; font-size: 11.5px; text-align: right; color: var(--fg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .toast { background: var(--fg); color: var(--bg); border-radius: 10px; box-shadow: 0 8px 28px rgb(0 0 0 / .25); }
 
 /* Dialog */
@@ -190,7 +190,7 @@ body { height: 100dvh; }
 .row-check { position: absolute; left: 8px; top: 8px; z-index: 1; }
 
 /* ---- Tabs: quiet close button, no boxed chrome ---- */
-.workspace-shell button.tab-close { display: inline-grid; place-content: center; width: 20px; min-width: 20px; height: 20px; min-height: 20px; margin: 0 8px 0 0;
+.workspace-shell button.tab-close { display: inline-grid; place-content: center; width: 24px; min-width: 24px; height: 24px; min-height: 24px; margin: 0 8px 0 0;
   padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--fg-muted); font-size: 14px; line-height: 1; opacity: .55; }
 .workspace-shell .document-tab:hover button.tab-close, .workspace-shell .document-tab:has([aria-selected="true"]) button.tab-close { opacity: 1; }
 .workspace-shell button.tab-close:hover { background: color-mix(in srgb, var(--danger) 18%, transparent); color: var(--danger); }
@@ -223,7 +223,7 @@ body { height: 100dvh; }
 
 /* ---- Polish pass ---- */
 #documentTabs { scrollbar-width: none; } #documentTabs::-webkit-scrollbar { display: none; }
-#retryStorage { text-decoration: none; opacity: .75; } #retryStorage:hover { text-decoration: underline; opacity: 1; }
+#retryStorage { text-decoration: none; } #retryStorage:hover { text-decoration: underline; }
 .panel-label { justify-content: space-between; }
 .markdown-import-bar { padding: 6px 14px; gap: 12px; font-size: 12.5px; color: var(--fg-muted); }
 .workspace-shell .markdown-import-bar #markdownOpen { min-height: 28px; padding: 2px 12px; font-size: 12.5px; }
