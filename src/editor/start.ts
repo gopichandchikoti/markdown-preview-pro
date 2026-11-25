@@ -48,6 +48,9 @@ const commandHandlers:Record<string,()=>void> = {
   "copyHTML()": () => copyHTML(),
   "toggleSearch()": () => toggleSearch(),
   "clearEditor()": () => clearEditor(),
+  "openPalette()": () => openPalette(),
+  "insertImage()": () => UI.html("imageFile").click(),
+  "toggleFocus()": () => toggleFocus(),
 
 };
 document.querySelectorAll<HTMLElement>('[data-command]').forEach(control => {
@@ -60,6 +63,14 @@ UI.html('searchOverlay').addEventListener('keydown', event => {
   if (event.key === 'Escape') { event.preventDefault(); toggleSearch(); }
 });
 preview.addEventListener('click', event => {
+  const note = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a.fn-ref, a.fn-back') : null;
+  if (note) {
+    event.preventDefault();
+    const n = /fn-(?:ref|back)-(\d+)/.exec(note.className)?.[1];
+    const goal = n ? preview.querySelector(note.classList.contains('fn-ref') ? '.fn-def-' + n : '.fn-ref-' + n) : null;
+    goal?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+    return;
+  }
   const button = event.target instanceof Element ? event.target.closest('button.copy-btn') : null;
   if (button instanceof HTMLButtonElement) copyCode(button);
 });

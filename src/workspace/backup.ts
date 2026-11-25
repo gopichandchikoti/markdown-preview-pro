@@ -3,6 +3,7 @@
   const node = typeof module !== 'undefined' && module.exports;
   const M:ModelAPI = node ? require('./model') : root.WorkspaceModel;
   const JSONParser:typeof StrictJSON = node ? require('../json') : root.StrictJSON;
+  const ImageApi:typeof WorkspaceImages = node ? require('./images') : (root.WorkspaceImages ?? { ID_PATTERN: /^$/, validData: () => false, MAX_IMAGES: 0, referencedIds: () => new Set<string>() } as unknown as typeof WorkspaceImages);
   const MAX_BYTES = 32 * 1024 * 1024;
   function isRecord(value:unknown):value is Record<string,unknown> {
     return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -14,7 +15,10 @@
     const records = { folders:value.folders, documents:value.documents };
     M.validateTree(records);
     // The record validator above checks every field before this typed boundary copies the contract.
-    return { format:'md-preview-pro', version:1, metadata:{schemaVersion:1},
+    const images = Array.isArray(value.images) ? value.images.filter((i:unknown):i is ImageRecord => isRecord(i) &&
+      typeof i.id === 'string' && ImageApi.ID_PATTERN.test(i.id) && ImageApi.validData(i.data)).slice(0, ImageApi.MAX_IMAGES)
+      .map((i:ImageRecord) => ({ id:i.id, data:i.data })) : [];
+    return { format:'md-preview-pro', version:1, metadata:{schemaVersion:1}, ...(images.length ? { images } : {}),
       folders:records.folders.map((r:WorkspaceFolder) => ({ id:r.id, parentId:r.parentId, name:r.name,
         createdAt:r.createdAt, updatedAt:r.updatedAt, sortOrder:r.sortOrder })),
       documents:records.documents.map((r:WorkspaceDocument) => ({ id:r.id,folderId:r.folderId,name:r.name,
@@ -30,8 +34,10 @@
     const bytes:typeof FileBytes = node ? require('../files') : root.FileBytes;
     return bytes.read(file, { maxBytes:MAX_BYTES, overflowCode:'backupLimit' });
   }
-  function encode(snapshot:Pick<WorkspaceSnapshot,'folders'|'documents'>):BackupData {
-    return { format: 'md-preview-pro', version: 1, metadata: { schemaVersion: 1 },
+  function encode(snapshot:Pick<WorkspaceSnapshot,'folders'|'documents'>, images:ReadonlyArray<ImageRecord> = []):BackupData {
+    const used = ImageApi.referencedIds(snapshot.documents);
+    const kept = images.filter(i => used.has(i.id)).map(i => ({ id: i.id, data: i.data }));
+    return { format: 'md-preview-pro', version: 1, metadata: { schemaVersion: 1 }, ...(kept.length ? { images: kept } : {}),
       folders: structuredClone(snapshot.folders), documents: structuredClone(snapshot.documents) };
   }
   function apply(state:WorkspaceSnapshot, backup:BackupData, mode:string, expectedGeneration:number) {
@@ -96,7 +102,7 @@
           snapshot.documents.push({ ...snapshot.documents[0], id: M.id(), content: legacy,
             name: M.uniqueName(snapshot.documents, 'folderId', folder, t('workspace.defaultFile')) });
       }
-      const backup = validate(encode(snapshot));
+      const backup = validate(encode(snapshot, await w?.images?.all().catch(() => []) ?? []));
       const serialized = JSON.stringify(backup, null, 2);
       download(serialized, t('backup.filename'));
       w?.notice(t(new TextEncoder().encode(serialized).byteLength > MAX_BYTES ? 'backup.large' : 'backup.exported'));
@@ -126,6 +132,7 @@
         if (typeof mode !== 'string') return;
         if ([...w.sessions.values()].some(s => s.dirty)) M.fail('drafts');
         await w.repository.change(s => apply(s, backup, mode, generation));
+        try { await w.images?.putMany(backup.images ?? []); } catch { /* Text restored; missing images show a placeholder. */ }
         w.sessions.clear(); w.statuses.clear(); await w.refresh();
         root.EditorBridge.restore(w); w.persist(); w.notice(t('backup.done')); w.broadcast?.();
       });

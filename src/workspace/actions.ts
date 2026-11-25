@@ -57,6 +57,17 @@
     for (const [id, session] of w.sessions) if (!session.dirty) w.sessions.delete(id);
     w.setSelectMode(false); await w.refresh(); root.EditorBridge?.restore(w); w.persist(); w.broadcast?.();
   }
+  /** Drag-and-drop move: same flush, revision check and refresh as the Move dialog, minus the dialog. */
+  async function moveItem(w:WorkspaceInstance, id:string, destination:string|null) {
+    const kind = w.kindOf(id); const current = w.snapshot[kind].find(r => r.id === id); if (!current) return;
+    if ('folderId' in current ? current.folderId === destination : current.parentId === destination) return;
+    if (kind === 'documents' && (!destination || (root.EditorBridge && !await root.EditorBridge.flush(w, id)))) return;
+    const fresh = w.snapshot[kind].find(r => r.id === id); if (!fresh) return;
+    const moved = await w.repository.move(kind, id, destination, 'revision' in fresh ? fresh.revision : undefined);
+    const session = w.sessions.get(id); if (session && 'folderId' in moved) session.document = moved;
+    if (destination) w.expand(destination, true);
+    await w.refresh(); root.EditorBridge?.restore(w); w.persist(); w.broadcast?.();
+  }
   function path(w:WorkspaceInstance, id:string|null) {
     const names = [];
     while (id) { const f = w.snapshot.folders.find(f => f.id === id); if (!f) break;
@@ -95,5 +106,5 @@
     w.activate(w.state.tabs[(w.state.tabs.indexOf(w.state.active || '') + direction + w.state.tabs.length) %
       w.state.tabs.length], true); return true;
   }
-  root.WorkspaceActions = { bind, cycle, path };
+  root.WorkspaceActions = { bind, cycle, path, moveItem };
 })(globalThis);

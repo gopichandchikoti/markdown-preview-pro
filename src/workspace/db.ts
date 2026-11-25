@@ -1,6 +1,7 @@
 (function (root) {
   'use strict';
   const STORES = ['folders', 'documents', 'workspaceMeta'] as const;
+  const DB_VERSION = 4; // v3 adds images as an independent store; v4 removes the retired versions store; v1 records are never rewritten.
   function requestResult<T>(request:IDBRequest<T>):Promise<T> {
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve(request.result);
@@ -10,15 +11,18 @@
   function openDatabase(factory:IDBFactory|null = root.indexedDB, name = 'md-preview-pro-workspace'):Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
       if (!factory) { reject(new Error('storageUnavailable')); return; }
-      const request = factory.open(name, 1);
+      const request = factory.open(name, DB_VERSION);
       let settled = false;
-      const timer = setTimeout(() => { settled = true; reject(new Error('storageBlocked')); }, 5000);
+      const timer = setTimeout(() => { settled = true; reject(new Error('storageBlocked')); }, 10000);
       request.onupgradeneeded = () => {
-        for (const store of STORES) request.result.createObjectStore(store, { keyPath: store ===
+        const db = request.result;
+        for (const store of STORES) if (!db.objectStoreNames.contains(store)) db.createObjectStore(store, { keyPath: store ===
           'workspaceMeta' ? 'key' : 'id' });
+        if (db.objectStoreNames.contains('versions')) db.deleteObjectStore('versions'); // removed feature
+        if (!db.objectStoreNames.contains('images')) db.createObjectStore('images', { keyPath: 'id' });
       };
       request.onerror = () => { clearTimeout(timer); reject(request.error); };
-      request.onblocked = () => { clearTimeout(timer); settled = true; reject(new Error('storageBlocked')); };
+      request.onblocked = () => { /* Other tabs close on versionchange and the upgrade then continues; the timer reports a tab that never does. */ };
       request.onsuccess = () => {
         clearTimeout(timer);
         if (settled) { request.result.close(); return; }

@@ -61,6 +61,9 @@
         </button>
         <button class="tool-btn" data-command="insertHR()" data-tip-key="ui.divider">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="12" x2="22" y2="12"></line></svg>
+        </button>
+        <button class="tool-btn" data-command="insertImage()" data-tip-key="tip.image">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path></svg>
         </button></div>
       </div>
 
@@ -93,6 +96,12 @@
         </button>
         <button class="tool-btn" data-command="toggleSearch()" data-tip-key="ui.find.ctrl.f">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+        <button class="tool-btn" data-command="openPalette()" data-tip-key="tip.palette">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"></path></svg>
+        </button>
+        <button class="tool-btn" data-command="toggleFocus()" data-tip-key="tip.focus">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
         </button></div>
         <div class="tool-group tool-group-danger"><button class="tool-btn" data-command="clearEditor()" data-tip-key="ui.clear">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
@@ -176,6 +185,23 @@
     </div>
   </div>
 
+  <input type="file" id="imageFile" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+  <dialog id="paletteDialog" class="palette" aria-labelledby="paletteTitle">
+    <h2 id="paletteTitle" class="visually-hidden" data-text="palette.title"></h2>
+    <input id="paletteInput" type="text" role="combobox" aria-expanded="true" aria-controls="paletteList" autocomplete="off" spellcheck="false">
+    <ul id="paletteList" role="listbox" data-label="palette.results"></ul>
+    <p class="palette-foot" data-text="palette.hint"></p>
+  </dialog>
+  <dialog id="shortcutsDialog" class="shortcuts-dialog" aria-labelledby="shortcutsTitle">
+    <h2 id="shortcutsTitle" data-text="shortcuts.title"></h2>
+    <dl id="shortcutsList"></dl>
+    <button id="shortcutsClose" type="button" data-text="shortcuts.close"></button>
+  </dialog>
+  <div id="focusBar" class="focus-bar" role="group" data-label="focus.label" hidden>
+    <button id="focusWrite" type="button" aria-pressed="true" data-text="focus.write"></button>
+    <button id="focusRead" type="button" aria-pressed="false" data-text="focus.read"></button>
+    <button id="focusExit" type="button" data-text="focus.exit"></button>
+  </div>
   <dialog id="workspaceDialog" aria-labelledby="dialogTitle"><form method="dialog"></form></dialog>
   <div id="markdownDropHint" class="markdown-drop-hint" role="status" hidden><span data-text="import.markdown.drop"></span></div>
   <script defer="" src="vendor/purify.min.js"></script>
@@ -189,6 +215,7 @@
   <script defer="" src="src/workspace/model.js"></script>
   <script defer="" src="src/workspace/db.js"></script>
   <script defer="" src="src/workspace/migration.js"></script>
+  <script defer="" src="src/workspace/images.js"></script>
   <script defer="" src="src/workspace/repository.js"></script>
   <script defer="" src="src/workspace/workspace-state.js"></script>
   <script defer="" src="src/workspace/dialog.js"></script>
@@ -204,10 +231,13 @@
   <script defer="" src="src/workspace/markdown-import.js"></script>
   <script defer="" src="src/app.js"></script>
   <script defer="" src="src/editor/render.js"></script>
+  <script defer="" src="src/editor/enhance.js"></script>
   <script defer="" src="src/editor/commands.js"></script>
   <script defer="" src="src/editor/layout.js"></script>
   <script defer="" src="src/editor/bridge.js"></script>
   <script defer="" src="src/editor/start.js"></script>
+  <script defer="" src="src/editor/image-insert.js"></script>
+  <script defer="" src="src/editor/palette.js"></script>
   <script defer="" src="src/workspace/start.js"></script>
 
 

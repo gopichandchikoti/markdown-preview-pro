@@ -18,6 +18,7 @@ function render() {
   });
   updateStats();
   updateOutline();
+  try { enhancePreview(preview); } catch { /* Math, diagrams and stored images are optional; the text preview must never fail with them. */ }
 }
 
 function debouncedRender() {

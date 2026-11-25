@@ -5,6 +5,7 @@
   "main": "index.html",
   "scripts": {
     "start": "node dist/tools/server.js",
+    "restart": "node dist/tools/restart.js",
     "build": "tsc && node dist/tools/vendor.js && node dist/tools/content.js && tsc && node dist/tools/copy-assets.js",
     "check": "npm run typecheck && node dist/tools/check.js",
     "test": "node --test dist/tests/*.test.js",
@@ -24,7 +25,9 @@
   "author": "Gopichand Chikoti",
   "license": "MIT",
   "dependencies": {
-    "dompurify": "3.4.17"
+    "dompurify": "3.4.17",
+    "katex": "0.19.1",
+    "mermaid": "12.3.0"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1",

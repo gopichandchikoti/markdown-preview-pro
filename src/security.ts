@@ -25,7 +25,7 @@
       const fragment = purifier.sanitize(html, {
         ALLOWED_TAGS: ['p', 'br', 'hr', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'img',
           'ul', 'ol', 'li', 'strong', 'em', 'del', 'blockquote', 'pre', 'code', 'span', 'div',
-          'table', 'thead', 'tbody', 'tr', 'th', 'td', 'input', 'button'],
+          'table', 'thead', 'tbody', 'tr', 'th', 'td', 'input', 'button', 'sup'],
         ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'type', 'checked'],
         ALLOW_DATA_ATTR: false,
         ALLOW_ARIA_ATTR: false,
@@ -33,6 +33,7 @@
         RETURN_DOM_FRAGMENT: true,
       });
       for (const link of fragment.querySelectorAll('a')) {
+        if (link.getAttribute('href') === '#') { link.removeAttribute('target'); link.removeAttribute('rel'); continue; }
         const href = safeUrl(link.getAttribute('href') || '');
         if (href) link.setAttribute('href', href);
         else link.removeAttribute('href');
@@ -40,6 +41,8 @@
         link.setAttribute('rel', 'noopener noreferrer');
       }
       for (const image of fragment.querySelectorAll('img')) {
+        const local = /^#img-([A-Za-z0-9-]{8,64})$/.exec(image.getAttribute('src') || '');
+        if (local) { image.removeAttribute('src'); image.setAttribute('referrerpolicy', 'no-referrer'); image.dataset.localImage = local[1]; continue; }
         const url = safeUrl(image.getAttribute('src') || '', true);
         image.removeAttribute('src');
         image.setAttribute('referrerpolicy', 'no-referrer');

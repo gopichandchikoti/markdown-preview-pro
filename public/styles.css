@@ -321,3 +321,29 @@
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 @media (max-width: 768px) { .toolbar-left, .toolbar-right { width: 100%; } .status-bar { flex-wrap: wrap; gap: 4px; } .stat-pills { flex-wrap: wrap; } .outline-panel.open { max-width: 100%; } }
 @media (max-width: 768px) { .tool-btn::after { display: none; } }
+
+/* Code highlighting and footnotes */
+.preview-content .tok-c { color: var(--fg-muted); font-style: italic; }
+.preview-content .tok-s { color: #0a6e4f; }
+.preview-content .tok-n { color: #a35a00; }
+.preview-content .tok-k { color: #6d3fc0; font-weight: 600; }
+[data-theme="dark"] .preview-content .tok-s { color: #7ee2b8; }
+[data-theme="dark"] .preview-content .tok-n { color: #ffb86b; }
+[data-theme="dark"] .preview-content .tok-k { color: #c3a6ff; }
+.preview-content .fn-sup { font-size: .75em; line-height: 0; }
+.preview-content .fn-ref, .preview-content .fn-back { text-decoration: none; color: var(--primary); }
+.preview-content .footnotes { font-size: .9em; color: var(--fg-muted); padding-left: 1.4em; }
+.preview-content .fn-rule { margin-top: 2em; }
+
+/* Math, diagrams and stored images */
+.preview-content .math-block { display: block; overflow-x: auto; margin: 1em 0; padding: 4px 0; text-align: center; white-space: pre-wrap; }
+.preview-content .math-block .katex-display { margin: 0; }
+.preview-content .math-error { color: var(--danger); font-family: 'Cascadia Code', Consolas, monospace; }
+.preview-content .mermaid-block { margin: 1em 0; padding: 12px; overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card);
+  font: 12.5px/1.5 'Cascadia Code', Consolas, monospace; color: var(--fg-muted); white-space: pre-wrap; }
+.preview-content .mermaid-block.diagram-ready { display: flex; justify-content: center; white-space: normal; font: inherit; color: inherit; }
+.preview-content .mermaid-block svg { max-width: 100%; height: auto; }
+.preview-content .mermaid-block.diagram-error { border-color: var(--danger); }
+.preview-content .mermaid-block.diagram-error::after { content: attr(data-error); display: block; margin-top: 8px; color: var(--danger); font-family: inherit; }
+.preview-content img { max-width: 100%; height: auto; }
+.preview-content img.image-missing { display: inline-block; min-width: 140px; min-height: 64px; border: 1px dashed var(--border); border-radius: 8px; background: var(--bg); }

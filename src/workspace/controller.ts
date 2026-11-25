@@ -8,10 +8,13 @@
     pendingDocument = false;
     pendingLabel = 'workspace.creating';
     multi = new Set<string>(); selectMode = false; anchor:string|null = null;
-    broadcast?:()=>void; refreshExternal?:()=>Promise<void>;
+    broadcast?:()=>void; refreshExternal?:()=>Promise<void>; images:ImageAdapter|null = null;
 
     constructor(repository:RepositoryAdapter, snapshot:WorkspaceSnapshot) {
       this.repository = repository; this.snapshot = snapshot;
+      try { this.images = new root.WorkspaceImages.ImageStore(repository.db);
+        void this.images.prune(root.WorkspaceImages.referencedIds(snapshot.documents)); }
+      catch { this.images = null; }
       this.state = root.WorkspaceState.reconcile(root.WorkspaceState.read(), snapshot);
       this.selected = { kind: 'folders', id: this.state.selectedFolder };
       this.statuses = new Map(); this.sessions = new Map(); this.query = ''; this.activity = 0;
@@ -24,10 +27,15 @@
         this.state.selectedFolder || this.snapshot.folders[0]?.id;
     }
     persist() { if (!root.WorkspaceState.write(this.state)) this.notice(t('common.error')); }
-    notice(message:string) { byId('workspaceNotice').textContent = message; }
+    notice(message:string) {
+      const area = byId('workspaceNotice'); area.textContent = message;
+      setTimeout(() => { if (area.textContent === message) area.textContent = ''; }, 6000); // Messages are transient; storage failures set the text directly and stay.
+    }
     error(error:unknown) {
       const key = 'error.' + (error instanceof Error && 'code' in error ? error.code : '');
-      this.notice(t(Object.hasOwn(root.ContentModel.locales.en, key) ? key : 'common.error'));
+      const known = Object.hasOwn(root.ContentModel.locales.en, key);
+      if (!known) console.error('Workspace operation failed', error);
+      this.notice(t(known ? key : 'common.error'));
     }
     async run(action:()=>Promise<unknown>|unknown) {
       this.activity++;
@@ -83,6 +91,7 @@
         if (!folder) { const f = await this.repository.createFolder(null, t('workspace.defaultFolder'));
           folder = f.id; await this.refresh(); }
         if (!folder) return;
+        await seedGuideImage(this.repository);
         const doc = await this.repository.createDocument(folder, t('guide.welcome'));
         await this.refresh(); this.activate(doc.id); this.broadcast?.();
       } finally { this.pendingDocument = false; this.render(); byId('editor').focus(); }
@@ -96,6 +105,12 @@
       const expanded = new Set(this.state.expanded);
       if (force === true || (force !== false && !expanded.has(id))) expanded.add(id); else expanded.delete(id);
       this.state.expanded = [...expanded]; this.render(); this.persist();
+    }
+    reorderTab(id:string, target:string, after:boolean) {
+      const rest = this.state.tabs.filter(tab => tab !== id); const at = rest.indexOf(target);
+      if (at < 0 || !this.state.tabs.includes(id)) return;
+      rest.splice(at + (after ? 1 : 0), 0, id); this.state.tabs = rest; this.render(); this.persist();
+      byId('tab-' + id)?.focus({ preventScroll: true });
     }
     kindOf(id:string):EntityKind { return this.snapshot.folders.some(f => f.id === id) ? 'folders' : 'documents'; }
     visibleIds() { return [...byId('explorerTree').querySelectorAll<HTMLElement>('[role=treeitem]')].map(e => e.dataset.id || '').filter(Boolean); }
@@ -115,10 +130,11 @@
     }
     render() {
       root.WorkspaceTabs.renderTabs({ container: byId('documentTabs'), documents: this.snapshot.documents, state: this.state,
-        statuses: this.statuses, activate: (id, focus) => this.activate(id, focus), close: id => this.run(() => this.close(id)) });
+        statuses: this.statuses, activate: (id, focus) => this.activate(id, focus), close: id => this.run(() => this.close(id)),
+        reorder: (id, target, after) => this.reorderTab(id, target, after) });
       root.WorkspaceExplorer.renderExplorer({ container: byId('explorerTree'), snapshot: this.snapshot,
         state: this.state, selected: this.selected, query: this.query,
-        mode: this.selectMode, checked: this.multi, check: (id, range) => this.check(id, range),
+        mode: this.selectMode, checked: this.multi, check: (id, range) => this.check(id, range), move: (id, destination) => this.run(() => root.WorkspaceActions.moveItem(this, id, destination)),
         select: selected => this.select(selected), open: id => this.activate(id), expand: id => this.expand(id) });
       byId('workspaceShell').classList.toggle('sidebar-hidden', !this.state.sidebar);
       byId('explorerToggle').setAttribute('aria-expanded', String(this.state.sidebar));
@@ -145,6 +161,15 @@
       root.EditorBridge?.status(this);
     }
   }
+  /** The welcome guide shows a sample image; store it once, under a fixed id, whenever a guide copy exists. */
+  async function seedGuideImage(repository:RepositoryAdapter, snapshot?:WorkspaceSnapshot) {
+    try {
+      const id = 'welcome-demo-01';
+      if (snapshot && !snapshot.documents.some(d => d.content.includes('#img-' + id))) return;
+      const store = new root.WorkspaceImages.ImageStore(repository.db);
+      if (!(await store.get(id))) await store.put(t('guide.demoImage'), id);
+    } catch { /* The sample image is optional; the guide still renders without it. */ }
+  }
   async function start() {
     byId('saveStatus').textContent = t('common.loading');
     let database;
@@ -153,6 +178,7 @@
       const repository = new root.WorkspaceRepository.Repository(database);
       const snapshot = await repository.initialize(() => localStorage.getItem('md-preview-pro-content'),
         { folder: t('workspace.defaultFolder'), file: t('workspace.defaultFile'), welcome: t('guide.welcome') });
+      await seedGuideImage(repository, snapshot);
       root.Workspace = new Controller(repository, snapshot); root.WorkspaceActions.bind(root.Workspace);
       root.EditorBridge?.start(root.Workspace); root.Workspace.render(); root.WorkspaceSync?.start(root.Workspace);
       matchMedia('(max-width: 768px)').addEventListener('change', () => {
@@ -167,6 +193,7 @@
         database.close();
       }
       byId('saveStatus').textContent = t('common.failed'); byId('workspaceNotice').textContent = t('common.unavailable');
+      console.error('Workspace storage failed', error);
       root.EditorBridge?.unavailable();
       return null;
     }

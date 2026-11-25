@@ -109,3 +109,16 @@ test('folder duplication copies a complete subtree with new independent folder/d
   assert.equal((await r.snapshot()).documents.find(document => document.id === nested.id)?.content, 'Nested body');
   assert.equal((await r.duplicateFolder(root.id)).name, 'My Notes (3)'); r.close();
 });
+test('removeMany deletes checked files and folder subtrees in one transaction and rejects stale generations', async () => {
+  const { repository: r, state } = await fixture();
+  const parent = state.folders[0];
+  const a = await r.createFolder(parent.id, 'A'); const b = await r.createFolder(a.id, 'B');
+  const inA = await r.createDocument(b.id); const keep = await r.createDocument(parent.id, '', 'keep.md');
+  const lone = await r.createDocument(parent.id, '', 'lone.md');
+  await assert.rejects(r.removeMany([{ kind: 'folders', id: a.id }], 1), /conflict/);
+  await r.removeMany([{ kind: 'folders', id: a.id }, { kind: 'documents', id: lone.id }], WorkspaceGeneration(await r.snapshot()));
+  const s = await r.snapshot();
+  assert.ok(!s.folders.some(f => f.id === a.id || f.id === b.id));
+  assert.ok(!s.documents.some(d => d.id === inA.id || d.id === lone.id));
+  assert.ok(s.documents.some(d => d.id === keep.id)); r.close();
+});
