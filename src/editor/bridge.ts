@@ -110,7 +110,7 @@
       let legacy = null;
       try { legacy = localStorage.getItem('md-preview-pro-content'); }
       catch { /* Recovery remains editable when localStorage is also unavailable. */ }
-      editor.value = legacy ?? '';
+      editor.value = legacy ?? t('guide.welcome'); // Nothing stored to protect: show the guide instead of a blank page.
       root.Recovery = { original: editor.value, legacy };
       window.addEventListener('beforeunload', event => {
         if (!root.Workspace && editor.value !== root.Recovery?.original) {

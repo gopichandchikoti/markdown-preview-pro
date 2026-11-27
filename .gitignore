@@ -13,3 +13,5 @@ public/src/
 public/vendor/
 .env.*
 !.env.example
+vendor/katex/
+vendor/mermaid/

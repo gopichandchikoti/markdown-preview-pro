@@ -1,17 +1,18 @@
 /* ── CSS Variables / Theming ── */
     :root {
-      --bg: #ffffff;
-      --bg-card: #f9fafb;
-      --bg-hover: #f3f4f6;
-      --fg: #111827;
-      --fg-muted: #6b7280;
-      --border: #e5e7eb;
-      --primary: #6366f1;
+      --bg: #eef1f5;
+      --bg-card: #ffffff;
+      --bg-hover: #e4e9ef;
+      --fg: #151c26;
+      --fg-muted: #556070;
+      --border: #d5dce5;
+      --primary: #087266;
       --primary-fg: #ffffff;
-      --accent-bg: rgba(99,102,241,0.08);
-      --code-bg: rgba(0,0,0,0.04);
-      --pre-bg: #f3f4f6;
-      --shadow: 0 1px 3px rgba(0,0,0,0.06);
+      --accent-bg: rgba(8,114,102,0.09);
+      --code-bg: rgba(21,28,38,0.05);
+      --pre-bg: #f1f4f8;
+      --danger: #b42318;
+      --shadow: 0 1px 2px rgba(21,28,38,0.08);
       --alert-note: #3b82f6;
       --alert-tip: #22c55e;
       --alert-important: #a855f7;
@@ -20,25 +21,26 @@
     }
 
     [data-theme="dark"] {
-      --bg: #0f1117;
-      --bg-card: #1a1b26;
-      --bg-hover: #24253a;
-      --fg: #e5e7eb;
-      --fg-muted: #9ca3af;
-      --border: #2d2f3e;
-      --primary: #818cf8;
-      --primary-fg: #0f0f1a;
-      --accent-bg: rgba(129,140,248,0.1);
+      --bg: #0a0f16;
+      --bg-card: #0f1620;
+      --bg-hover: #18222f;
+      --fg: #e3eaf2;
+      --fg-muted: #9aa9ba;
+      --border: #1f2d3d;
+      --primary: #5fe3bd;
+      --primary-fg: #05231c;
+      --accent-bg: rgba(95,227,189,0.1);
       --code-bg: rgba(255,255,255,0.06);
-      --pre-bg: #161825;
-      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --pre-bg: #0b121b;
+      --danger: #ff8f82;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4);
     }
 
     /* ── Reset ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
       background: var(--bg);
       color: var(--fg);
       overflow: hidden;
@@ -99,7 +101,7 @@
     }
     .theme-toggle-option.active {
       background: var(--primary); color: var(--primary-fg);
-      box-shadow: 0 1px 4px rgba(99,102,241,0.3);
+      box-shadow: none;
     }
     .theme-toggle-option svg { width: 16px; height: 16px; }
 
@@ -123,7 +125,7 @@
     .cursor-pos { font-size: 11px; color: var(--fg-muted); }
 
     #editor {
-      font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-family: 'Cascadia Code', 'Cascadia Mono', 'SF Mono', 'Consolas', monospace;
       font-size: 14px; line-height: 1.7; tab-size: 2;
       resize: none; border: none; outline: none;
       background: var(--bg-card); color: var(--fg);
@@ -242,7 +244,7 @@
     }
     .preview-content blockquote p { margin: 0.2em 0; }
     .preview-content code {
-      font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-family: 'Cascadia Code', 'Cascadia Mono', 'SF Mono', 'Consolas', monospace;
       background: var(--code-bg); padding: 0.15em 0.4em;
       border-radius: 4px; font-size: 0.88em;
     }
@@ -319,3 +321,29 @@
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 @media (max-width: 768px) { .toolbar-left, .toolbar-right { width: 100%; } .status-bar { flex-wrap: wrap; gap: 4px; } .stat-pills { flex-wrap: wrap; } .outline-panel.open { max-width: 100%; } }
 @media (max-width: 768px) { .tool-btn::after { display: none; } }
+
+/* Code highlighting and footnotes */
+.preview-content .tok-c { color: var(--fg-muted); font-style: italic; }
+.preview-content .tok-s { color: #0a6e4f; }
+.preview-content .tok-n { color: #a35a00; }
+.preview-content .tok-k { color: #6d3fc0; font-weight: 600; }
+[data-theme="dark"] .preview-content .tok-s { color: #7ee2b8; }
+[data-theme="dark"] .preview-content .tok-n { color: #ffb86b; }
+[data-theme="dark"] .preview-content .tok-k { color: #c3a6ff; }
+.preview-content .fn-sup { font-size: .75em; line-height: 0; }
+.preview-content .fn-ref, .preview-content .fn-back { text-decoration: none; color: var(--primary); }
+.preview-content .footnotes { font-size: .9em; color: var(--fg-muted); padding-left: 1.4em; }
+.preview-content .fn-rule { margin-top: 2em; }
+
+/* Math, diagrams and stored images */
+.preview-content .math-block { display: block; overflow-x: auto; margin: 1em 0; padding: 4px 0; text-align: center; white-space: pre-wrap; }
+.preview-content .math-block .katex-display { margin: 0; }
+.preview-content .math-error { color: var(--danger); font-family: 'Cascadia Code', Consolas, monospace; }
+.preview-content .mermaid-block { margin: 1em 0; padding: 12px; overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card);
+  font: 12.5px/1.5 'Cascadia Code', Consolas, monospace; color: var(--fg-muted); white-space: pre-wrap; }
+.preview-content .mermaid-block.diagram-ready { display: flex; justify-content: center; white-space: normal; font: inherit; color: inherit; }
+.preview-content .mermaid-block svg { max-width: 100%; height: auto; }
+.preview-content .mermaid-block.diagram-error { border-color: var(--danger); }
+.preview-content .mermaid-block.diagram-error::after { content: attr(data-error); display: block; margin-top: 8px; color: var(--danger); font-family: inherit; }
+.preview-content img { max-width: 100%; height: auto; }
+.preview-content img.image-missing { display: inline-block; min-width: 140px; min-height: 64px; border: 1px dashed var(--border); border-radius: 8px; background: var(--bg); }

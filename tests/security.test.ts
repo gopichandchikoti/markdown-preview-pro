@@ -63,3 +63,15 @@ test('server serves only runtime files, denies foreign hosts/mutations and adds 
     assert.equal((await fetch(base, { method: 'HEAD' })).status, 200);
   } finally { await new Promise(resolve => server.close(resolve)); }
 });
+
+test('stored-image references become data attributes without a src, and look-alikes stay inert', () => {
+  const window = new JSDOM('').window;
+  const security = createSecurity(createDOMPurify(window));
+  const fragment = security.sanitize('<img src="#img-0123abcd-4567" alt="ok"><img src="#img-x" alt="short"><img src="#other" alt="no">' +
+    '<span class="math-inline">x^2</span><div class="mermaid-block">graph TD</div>');
+  const images = [...fragment.querySelectorAll('img')];
+  assert.equal(images[0].dataset.localImage, '0123abcd-4567'); assert.equal(images[0].hasAttribute('src'), false);
+  assert.equal(images[1].dataset.localImage, undefined); assert.equal(images[2].dataset.localImage, undefined);
+  assert.ok(fragment.querySelector('.math-inline')); assert.ok(fragment.querySelector('.mermaid-block'));
+  window.close();
+});

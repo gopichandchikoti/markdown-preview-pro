@@ -36,13 +36,21 @@ interface ModelAPI {
   generation(state: WorkspaceSnapshot): number; marker(state: WorkspaceSnapshot): InitializationMarker;
   WorkspaceError: new(code: string) => Error & {code:string};
 }
+interface ImageRecord { id: string; data: string; createdAt?: number }
+interface ImageAdapter {
+  put(data: string, id?: string): Promise<string>; get(id: string): Promise<string | null>; all(): Promise<ImageRecord[]>;
+  putMany(images: ReadonlyArray<ImageRecord>): Promise<void>; prune(referenced: ReadonlySet<string>): Promise<void>; count(): Promise<number>;
+}
+declare var WorkspaceImages: { ImageStore: new (db: IDBDatabase) => ImageAdapter; validData(value: unknown): value is string;
+  referencedIds(documents: ReadonlyArray<{ content: string }>): Set<string>; MAX_IMAGES: number; MAX_DATA_URL: number; TYPES: string[]; ID_PATTERN: RegExp };
 interface DatabaseAPI {
   openDatabase(factory?: IDBFactory | null, name?: string): Promise<IDBDatabase>;
   transact<T>(db: IDBDatabase, mode: IDBTransactionMode, transform: (state: WorkspaceSnapshot) => T): Promise<T>;
 }
 interface RepositoryAdapter {
   db: IDBDatabase;
-  initialize(readLegacy: () => string | null, names?: {folder:string;file:string}): Promise<WorkspaceSnapshot>;
+  db: IDBDatabase;
+  initialize(readLegacy: () => string | null, names?: {folder:string;file:string;welcome?:string}): Promise<WorkspaceSnapshot>;
   snapshot(): Promise<WorkspaceSnapshot>;
   change<T>(transform: (state: WorkspaceSnapshot) => T): Promise<T>;
   createFolder(parentId: string | null, name: string): Promise<WorkspaceFolder>;
@@ -57,6 +65,7 @@ interface RepositoryAdapter {
   duplicate(id: string): Promise<WorkspaceDocument>;
   duplicateFolder(id:string):Promise<WorkspaceFolder>;
   remove(kind: EntityKind, id: string, generation: number): Promise<void>;
+  removeMany(items: ReadonlyArray<{kind:EntityKind;id:string}>, generation: number): Promise<void>;
   close(): void;
 }
 interface SelectionRef { id: string | null; kind: EntityKind }
@@ -65,6 +74,8 @@ interface WorkspaceInstance {
   statuses: Map<string, SaveStatus>; sessions: Map<string, DocumentSession>; query: string; activity: number;
   pendingDocument:boolean;
   pendingLabel:string;
+  multi:Set<string>; selectMode:boolean;
+  reorderTab(id:string,target:string,after:boolean):void; images:ImageAdapter|null; kindOf(id:string):EntityKind; check(id:string, range?:boolean):void; checkAll(on:boolean):void; setSelectMode(on:boolean):void;
   active(): WorkspaceDocument | undefined; generation(): number; destination(tab?:boolean): string | null | undefined;
   persist(): void; notice(message:string): void; error(error:unknown): void;
   run(action:()=>Promise<unknown>|unknown): Promise<boolean>; refresh(): Promise<void>;
@@ -77,12 +88,12 @@ interface DialogOptions {
   title:string; label?:string; value?:string; choices?:Array<{value:string;label:string}>; message?:string;
 }
 interface BackupData {
-  format:'md-preview-pro'; version:1; metadata:{schemaVersion:1}; folders:WorkspaceFolder[]; documents:WorkspaceDocument[];
+  format:'md-preview-pro'; version:1; metadata:{schemaVersion:1}; folders:WorkspaceFolder[]; documents:WorkspaceDocument[]; images?:ImageRecord[];
 }
 interface BackupAPI {
   MAX_BYTES:number; validate(value:unknown):BackupData; decode(bytes:Uint8Array):BackupData;
   readBackup(file:Pick<Blob,'size'|'stream'>):Promise<Uint8Array>;
-  encode(snapshot:Pick<WorkspaceSnapshot,'folders'|'documents'>):BackupData;
+  encode(snapshot:Pick<WorkspaceSnapshot,'folders'|'documents'>, images?:ReadonlyArray<ImageRecord>):BackupData;
   apply(state:WorkspaceSnapshot, backup:BackupData, mode:string, generation:number):void;
   bind():void; exportWorkspace():Promise<void>; download(value:string,name:string,type?:string):void;
 }
@@ -91,7 +102,7 @@ declare var Content: ContentAdapter;
 declare var WorkspaceModel: ModelAPI;
 declare var WorkspaceDB: DatabaseAPI;
 declare var WorkspaceMigration: {
-  initialize(state:WorkspaceSnapshot, readLegacy:()=>string|null, names:{folder:string;file:string}):
+  initialize(state:WorkspaceSnapshot, readLegacy:()=>string|null, names:{folder:string;file:string;welcome?:string}):
     {documentId:string;content:string}|undefined;
 };
 declare var WorkspaceRepository: { Repository: new(db:IDBDatabase)=>RepositoryAdapter };
@@ -120,15 +131,16 @@ declare var MarkdownFiles: {
   read(files:ReadonlyArray<MarkdownFile>):Promise<MarkdownImport[]>; MAX_FILE_BYTES:number; MAX_BATCH_BYTES:number;
 };
 declare var WorkspaceMarkdownImport: { bind():void; open(files:ReadonlyArray<MarkdownFile>):Promise<void> };
-declare var WorkspaceActions: {bind(w:WorkspaceInstance):void; cycle(w:WorkspaceInstance,direction:number):boolean; path(w:WorkspaceInstance,id:string|null):string};
+declare var WorkspaceActions: {bind(w:WorkspaceInstance):void; cycle(w:WorkspaceInstance,direction:number):boolean; path(w:WorkspaceInstance,id:string|null):string; moveItem(w:WorkspaceInstance,id:string,destination:string|null):Promise<void>};
 interface TabsOptions {
   container:HTMLElement;documents:WorkspaceDocument[];state:WorkspaceView;statuses:Map<string,SaveStatus>;
-  activate(id:string,focus?:boolean):void;close(id:string):void;
+  activate(id:string,focus?:boolean):void;close(id:string):void;reorder(id:string,target:string,after:boolean):void;
 }
 declare var WorkspaceTabs: {renderTabs(options:TabsOptions):void};
 interface ExplorerOptions {
   container:HTMLElement;snapshot:WorkspaceSnapshot;state:WorkspaceView;selected:SelectionRef;query:string;
   select(selection:SelectionRef):void;open(id:string):void;expand(id:string):void;
+  mode:boolean;checked:ReadonlySet<string>;check(id:string,range:boolean):void;move(id:string,destination:string|null):void;
 }
 declare var WorkspaceExplorer: {
   renderExplorer(options:ExplorerOptions):void;

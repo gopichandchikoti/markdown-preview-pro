@@ -14,4 +14,10 @@ WorkspaceMarkdownImport.bind();
 if (matchMedia('(max-width: 768px)').matches) UI.html('workspaceShell').classList.add('sidebar-hidden');
 UI.html('explorerToggle').onclick = () => UI.html('workspaceShell').classList.toggle('sidebar-hidden');
 UI.html('explorerClose').onclick = () => UI.html('workspaceShell').classList.add('sidebar-hidden');
-WorkspaceController.start();
+const requiredGlobals = ['WorkspaceImages', 'enhancePreview', 'openPalette', 'insertImageFiles'];
+const notLoaded = requiredGlobals.filter(name => !(name in globalThis));
+void WorkspaceController.start().then(() => {
+  if (!notLoaded.length) return;
+  console.error('These app files did not load:', notLoaded.join(', '));
+  UI.html('workspaceNotice').textContent = Content.t('common.partialLoad');
+});

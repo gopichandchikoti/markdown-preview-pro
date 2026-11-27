@@ -16,22 +16,8 @@ function initTheme() {
     const saved = localStorage.getItem('md-preview-theme');
     if (saved && ['light', 'dark'].includes(saved)) { setTheme(saved); return; }
   } catch { /* System theme is available when preferences cannot be read. */ }
-  // Check system preference
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    setTheme('dark');
-  } else {
-    setTheme('light');
-  }
+  setTheme('light'); // Light is the default until the person picks another theme.
 }
-
-// Listen for system theme changes
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-  let savedTheme = null;
-  try { savedTheme = localStorage.getItem('md-preview-theme'); } catch { /* Storage can be denied. */ }
-  if (!savedTheme) {
-    setTheme(e.matches ? 'dark' : 'light');
-  }
-});
 
 editor.addEventListener('scroll', () => {
   if (!syncScroll) return;

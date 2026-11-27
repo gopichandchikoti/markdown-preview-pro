@@ -38,10 +38,10 @@ test('Explorer duplicates a selected folder and its document subtree', async ({ 
   });
   expect(result).toEqual({folders:2,contents:['Folder original','Folder original'],ids:4});
 });
-test('phase 2: blank initialization, nested Explorer CRUD, tab identity and empty state', async ({ page }) => {
+test('phase 2: welcome-guide initialization, nested Explorer CRUD, tab identity and empty state', async ({ page }) => {
   await ready(page);
   await expect(page.getByRole('tab')).toHaveCount(1);
-  expect(await page.evaluate(() => Workspace.snapshot.documents[0].content)).toBe('');
+  expect(await page.evaluate(() => Workspace.snapshot.documents[0].content)).toMatch(/^# Welcome to MD Preview Pro/);
   await page.reload(); await page.waitForFunction(() => Boolean(globalThis.Workspace));
   expect(await page.evaluate(() => Workspace.snapshot.documents.length)).toBe(1);
   await page.getByRole('button', { name: 'New folder', exact: true }).click();
@@ -231,4 +231,22 @@ test('phase 3: 20 documents, 12 ordered tabs, independent content, caret, scroll
   expect(await page.evaluate(() => Workspace.state.tabs)).toEqual(order);
   expect(await page.evaluate(() => Workspace.snapshot.documents.length)).toBe(20);
   await expect(editor).toHaveValue(/^# Alpha/);
+});
+test('Select mode: Select all and individual checkboxes delete several items at once', async ({ page }) => {
+  await ready(page);
+  await page.getByRole('button', {name:'New folder',exact:true}).click();
+  await page.getByLabel('Folder name', { exact: true }).fill('Projects');
+  await page.getByRole('button', {name:'Confirm',exact:true}).click();
+  await page.locator('#selectToggle').click();
+  await expect(page.locator('#selectionBar')).toBeVisible();
+  await expect(page.locator('#deleteSelected')).toBeDisabled();
+  await page.locator('#selectAll').check();
+  const total = await page.locator('.row-check').count();
+  expect(total).toBeGreaterThan(1);
+  await expect(page.locator('#selectionCount')).toContainText(String(total));
+  await page.locator('.row-check').first().uncheck();
+  await expect(page.locator('#selectionCount')).toContainText(String(total - 1));
+  await page.locator('#deleteSelected').click();
+  await page.getByRole('button', {name:'Confirm',exact:true}).click();
+  await expect(page.locator('#selectionBar')).toBeHidden();
 });

@@ -10,4 +10,5 @@ fs.rmSync(path.join(root, 'public/vendor'), { recursive: true, force: true });
 fs.cpSync(path.join(root, 'dist/src'), path.join(root, 'public/src'), { recursive: true });
 fs.mkdirSync(path.join(root, 'public/vendor'), { recursive: true });
 fs.copyFileSync(path.join(root, 'vendor/purify.min.js'), path.join(root, 'public/vendor/purify.min.js'));
+for (const dir of ['katex', 'mermaid']) fs.cpSync(path.join(root, 'vendor', dir), path.join(root, 'public/vendor', dir), { recursive: true });
 console.log('Copied compiled browser assets to public/.');

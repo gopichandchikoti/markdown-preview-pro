@@ -5,7 +5,8 @@ test('existing formatting, search, outline, statistics, sanitized HTML, code cop
   const editor = page.getByRole('textbox', { name: 'Markdown source', exact: true });
   await editor.fill('# Existing features\n\nSelected text\n\n```md\n- [ ] Fenced task\n```\n\n- [ ] Real task\n\n![Remote](https://tracking.example/x.png)');
   await editor.evaluate((e:HTMLTextAreaElement) => { const start = e.value.indexOf('Selected text'); e.setSelectionRange(start, start + 13); });
-  await page.keyboard.press('Control+b'); await expect(page.locator('#preview strong')).toHaveText('Selected text');
+  await page.keyboard.press('Control+b');
+  await expect(page.locator('#preview strong').filter({ hasText: /^Selected text$/ })).toHaveText('Selected text');
   await page.keyboard.press('Control+f'); await page.getByRole('textbox', { name: 'Find in document' }).fill('Real');
   await expect(page.locator('#searchCount')).toHaveText('1 found'); await page.keyboard.press('Escape');
   await expect(editor).toBeFocused();

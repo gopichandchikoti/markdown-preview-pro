@@ -40,6 +40,34 @@
     }
     await w.refresh(); root.EditorBridge?.restore(w); w.persist(); w.broadcast?.();
   }
+  async function removeMany(w:WorkspaceInstance) {
+    const picked = [...w.multi].map(id => ({ kind: w.kindOf(id), id })).filter(i => w.snapshot[i.kind].some(r => r.id === i.id));
+    const folders = new Set(picked.filter(i => i.kind === 'folders').map(i => i.id));
+    const top = picked.filter(i => { let parent = i.kind === 'folders' ? w.snapshot.folders.find(f => f.id === i.id)?.parentId :
+      w.snapshot.documents.find(d => d.id === i.id)?.folderId;
+      while (parent) { if (folders.has(parent)) return false; parent = w.snapshot.folders.find(f => f.id === parent)?.parentId; }
+      return true; });
+    if (!top.length) return;
+    if (root.EditorBridge && !await root.EditorBridge.flushAll(w)) return;
+    await w.refresh(); const generation = w.generation();
+    const only = top.length === 1 ? w.snapshot[top[0].kind].find(r => r.id === top[0].id) : null;
+    if (!await ask({ title: t('workspace.deleteSelected'), message: only ? t('workspace.deleteConfirm', { name: only.name }) :
+      t('workspace.deleteManyConfirm', { count: top.length }) })) return;
+    await w.repository.removeMany(top, generation);
+    for (const [id, session] of w.sessions) if (!session.dirty) w.sessions.delete(id);
+    w.setSelectMode(false); await w.refresh(); root.EditorBridge?.restore(w); w.persist(); w.broadcast?.();
+  }
+  /** Drag-and-drop move: same flush, revision check and refresh as the Move dialog, minus the dialog. */
+  async function moveItem(w:WorkspaceInstance, id:string, destination:string|null) {
+    const kind = w.kindOf(id); const current = w.snapshot[kind].find(r => r.id === id); if (!current) return;
+    if ('folderId' in current ? current.folderId === destination : current.parentId === destination) return;
+    if (kind === 'documents' && (!destination || (root.EditorBridge && !await root.EditorBridge.flush(w, id)))) return;
+    const fresh = w.snapshot[kind].find(r => r.id === id); if (!fresh) return;
+    const moved = await w.repository.move(kind, id, destination, 'revision' in fresh ? fresh.revision : undefined);
+    const session = w.sessions.get(id); if (session && 'folderId' in moved) session.document = moved;
+    if (destination) w.expand(destination, true);
+    await w.refresh(); root.EditorBridge?.restore(w); w.persist(); w.broadcast?.();
+  }
   function path(w:WorkspaceInstance, id:string|null) {
     const names = [];
     while (id) { const f = w.snapshot.folders.find(f => f.id === id); if (!f) break;
@@ -57,11 +85,16 @@
     });
     for (const action of ['rename', 'move', 'duplicate', 'delete'])
       byId('action-' + action).onclick = () => w.run(() => operation(w, action));
+    byId('selectToggle').onclick = () => w.setSelectMode(!w.selectMode);
+    UI.input('selectAll').onchange = () => w.checkAll(UI.input('selectAll').checked);
+    byId('deleteSelected').onclick = () => w.run(() => removeMany(w));
     byId('explorerFilter').oninput = event => { w.query = UI.input('explorerFilter').value; w.render(); };
     byId('explorerToggle').onclick = () => w.sidebar();
     byId('explorerClose').onclick = () => { w.sidebar(false); byId('explorerToggle').focus(); };
     byId('explorer').addEventListener('keydown', event => {
-      if (event.key === 'Escape') { w.sidebar(false); byId('explorerToggle').focus(); }
+      if (event.key !== 'Escape') return;
+      if (w.selectMode) { w.setSelectMode(false); byId('selectToggle').focus(); return; }
+      w.sidebar(false); byId('explorerToggle').focus();
     });
     root.WorkspaceExplorer.keyboard(byId('explorerTree'), id => w.expand(id, true), id => w.expand(id, false), id => {
       const kind = w.snapshot.folders.some(f => f.id === id) ? 'folders' : 'documents'; w.select({ kind, id });
@@ -73,5 +106,5 @@
     w.activate(w.state.tabs[(w.state.tabs.indexOf(w.state.active || '') + direction + w.state.tabs.length) %
       w.state.tabs.length], true); return true;
   }
-  root.WorkspaceActions = { bind, cycle, path };
+  root.WorkspaceActions = { bind, cycle, path, moveItem };
 })(globalThis);

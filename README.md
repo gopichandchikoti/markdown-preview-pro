@@ -21,9 +21,14 @@ Open **http://127.0.0.1:4175**. PORT selects another loopback port. Keep the sam
 port and browser profile to reopen your workspace. No .env file is read. Serve over HTTP using the
 included exact-allowlist server. Opening index.html directly is unsupported; assets compile into dist/.
 
+After pulling changes or adding files, run `npm run build` and then `npm run restart`. The server keeps its file
+list in memory, so an older copy still running on the port serves 404 for new files. `npm run restart` stops an older
+Node server on the same port and starts a fresh one.
+
 ## Workspace
 
-- A fresh browser origin gets My Notes and one blank Untitled 1.md. Reloads reuse them.
+- A fresh browser origin gets My Notes and one Untitled 1.md that holds a feature guide (`guide.welcome` in the
+  content model). Every new file starts with the same guide. Light is the default theme until you choose one.
 - Explorer creates nested folders/files, filters names, and renames, moves, duplicates or deletes items.
   Select a folder before New file. The tab-strip + uses the selected folder or active file’s folder.
 - Click a file to open/activate its existing tab. Tabs from all folders share one horizontally scrolling
@@ -44,11 +49,27 @@ included exact-allowlist server. Opening index.html directly is unsupported; ass
   theme, Explorer visibility, wrap, sync, outline, layout and desktop split width survive reloads.
   On narrow screens Explorer starts closed and opens as a drawer. Undo history is not restored.
 - Every active document has the existing formatting toolbar, search, outline, task toggles, statistics,
-  Markdown download and sanitized HTML copy. Code labels are displayed; syntax highlighting is not included.
+  Markdown download and sanitized HTML copy.
+- Preview adds basic syntax highlighting (JavaScript/TypeScript, Python, shell, SQL, CSS, JSON, Go, Rust, Java and
+  C-family), footnotes (`[^1]`), and a small set of emoji shortcodes such as `:rocket:`. The highlighter is a local
+  tokenizer, not a full grammar.
+- **Math** (`$x^2$` inline, `$$ ... $$` display) renders with bundled KaTeX; **Mermaid** diagrams render from a
+  ```` ```mermaid ```` fence (bundled Mermaid, `securityLevel: strict`). Both libraries load lazily from the app's own
+  origin; if one fails to load under the CSP, the source stays visible as text. Exported HTML keeps math as `$..$` text.
+- **Images**: paste an image into the editor or use the toolbar button. Large images are downscaled and stored in a
+  separate IndexedDB store; the Markdown only holds `![alt](#img-ID)`. PNG, JPEG, WebP and GIF up to about 3 MB of
+  data each, 300 images maximum; SVG is rejected. Unreferenced images are pruned at startup. Workspace backups include
+  referenced images in an optional `images` field (backup version stays 1; older backups import unchanged).
+- **Command palette** (Ctrl/Cmd+K) searches files and actions. **Keyboard shortcuts** list: Ctrl/Cmd+/.
+- **Focus mode** (Ctrl/Cmd+.) hides the interface and offers a Write / Read switch. Escape or Exit focus leaves it.
+- **Select** in the Explorer shows checkboxes, Select all (Shift-click selects a range) and Delete selected.
+- Drag a file or folder onto a folder to move it; drag a tab to reorder it, or press Alt+Left/Right on a tab.
+- **Export as HTML page** downloads a standalone styled page. **Print or save as PDF** uses the browser print dialog
+  with the preview only.
 
 ## Saving, conflicts and recovery
 
-IndexedDB v1 stores files/folders. Edits autosave after 300 ms; visibility changes, tab closing and
+IndexedDB (schema v4) stores files/folders and images. Edits autosave after 300 ms; visibility changes, tab closing and
 page lifecycle events also request saves. **Saved** means the transaction completed. **Save failed**
 keeps the draft in the window and blocks closing its tab; use Retry or Export workspace. A sudden
 browser/OS crash can lose edits that have not committed. Do not close a window containing failed saves.
@@ -78,7 +99,8 @@ Export backups regularly. Local browser data is unencrypted and accessible to ot
 
 ## Keyboard and accessibility
 
-- Ctrl/Cmd+B and I format; S downloads Markdown; F searches the active document.
+- Ctrl/Cmd+B and I format; S downloads Markdown; F searches the active document; K opens the command palette;
+  / lists shortcuts; . toggles focus mode.
 - In the tab strip: Left/Right, Home/End activate tabs; Delete closes a tab. Previous/Next/New/Close
   buttons provide alternatives. Explorer uses Up/Down, Left/Right, Home/End and Enter/Space.
 - Ctrl/Cmd+1–8 selects positions 1–8; 9 selects the last. Ctrl/Cmd+Tab/Shift+Tab, N and W are handled
